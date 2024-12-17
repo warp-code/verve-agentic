@@ -22,7 +22,14 @@
   },
   "folders": [
     {
+      "name": "root",
+      "path": "."
+    },
+    {
       "path": "./program"
+    },
+    {
+      "path": "./web-ui",
     },
     {
       "path": "./sdk",
@@ -30,12 +37,5 @@
     {
       "path": "./chatbot",
     },
-    {
-      "path": "./web-ui",
-    },
-    {
-      "name": "root",
-      "path": "."
-    }
   ]
 }
