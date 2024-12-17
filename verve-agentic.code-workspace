@@ -26,16 +26,16 @@
       "path": "."
     },
     {
-      "path": "./program"
+      "path": "./chatbot",
     },
     {
-      "path": "./web-ui",
+      "path": "./program"
     },
     {
       "path": "./sdk",
     },
     {
-      "path": "./chatbot",
+      "path": "./web-ui",
     },
   ]
 }
