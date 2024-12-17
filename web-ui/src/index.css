@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  @apply m-0 h-full bg-gray-100 font-sans antialiased;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  @apply flex min-h-full flex-col font-sans antialiased;
+}
+
+.btn {
+  @apply items-center whitespace-nowrap border border-transparent font-medium focus:outline-none disabled:opacity-75;
+}
+
+.btn-sm {
+  @apply rounded-md px-3 py-2.5 text-sm;
+}
+
+.btn-md {
+  @apply rounded-lg px-4 py-2.5 text-base;
+}
+
+.btn-black {
+  @apply border border-transparent bg-black text-white shadow hover:bg-gray-800 focus:ring-gray-500;
+}
+
+.btn-white {
+  @apply border-2 border-black bg-white text-gray-900 shadow-sm hover:bg-gray-50 focus:ring-blue-500;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
