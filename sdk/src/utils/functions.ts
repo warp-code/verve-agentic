@@ -5,20 +5,20 @@ import {
   getIndexOrAdd,
   LightSystemProgram,
   packCompressedAccounts,
-  PackedMerkleContext,
   packNewAddressParams,
   Rpc,
   type CompressedAccount,
   type CompressedAccountWithMerkleContext,
   type CompressedProofWithContext,
   type NewAddressParams,
+  type PackedMerkleContext,
 } from "@lightprotocol/stateless.js";
 import { keccak_256 } from "@noble/hashes/sha3";
 import {
-  AccountMeta,
   ComputeBudgetProgram,
   PublicKey,
   VersionedTransaction,
+  type AccountMeta,
   type TransactionInstruction,
 } from "@solana/web3.js";
 import { LIGHT_STATE_TREE_ACCOUNTS, PROGRAM_ID } from "./constants";
