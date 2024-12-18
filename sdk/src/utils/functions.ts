@@ -15,6 +15,7 @@ import { keccak_256 } from "@noble/hashes/sha3";
 import {
   ComputeBudgetProgram,
   PublicKey,
+  VersionedTransaction,
   type TransactionInstruction,
 } from "@solana/web3.js";
 import {
@@ -119,7 +120,7 @@ export async function buildTxWithComputeBudget(
   rpc: Rpc,
   instructions: TransactionInstruction[],
   payerPubkey: PublicKey,
-) {
+): Promise<VersionedTransaction> {
   const setComputeUnitIx = ComputeBudgetProgram.setComputeUnitLimit({
     units: 2_000_000,
   });
@@ -128,7 +129,11 @@ export async function buildTxWithComputeBudget(
 
   const { blockhash } = await rpc.getLatestBlockhash();
 
-  return buildTx(instructions, payerPubkey, blockhash);
+  return buildTx(
+    instructions,
+    payerPubkey,
+    blockhash,
+  ) as unknown as VersionedTransaction;
 }
 
 export function getInstructionAccountMeta(
