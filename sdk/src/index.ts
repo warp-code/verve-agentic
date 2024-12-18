@@ -1,33 +1,14 @@
-import {
-  bn,
-  deriveAddress,
-  Rpc,
-  toAccountMetas,
-} from "@lightprotocol/stateless.js";
-import type {
-  AccountMeta,
-  PublicKey,
-  Signer,
-  TransactionInstruction,
-} from "@solana/web3.js";
-import { serialize } from "borsh";
-import {
-  LIGHT_ACCOUNTS,
-  LIGHT_STATE_TREE_ACCOUNTS,
-  PROGRAM,
-  VERVE_INSTRUCTION_SCHEMA,
-} from "./utils/constants";
-import {
-  deriveWalletAddress,
-  deriveWalletGuardianSeed,
-  getInstructionAccountMeta,
-  getValidityProof,
-  getWalletGuardianAccount,
-  packWithInput,
-} from "./utils/functions";
-import type { VerveInstruction } from "./utils/types";
+import { Rpc } from "@lightprotocol/stateless.js";
+import { PDA_WALLET_SEED, PROGRAM_ID } from "./utils/constants";
+import { PublicKey } from "@solana/web3.js";
+import { deriveAddressSeed } from "./utils/functions";
 
-export function createWallet() {
+export function createWallet(rpc: Rpc, seedGuardian: PublicKey) {
+  const _wallet = deriveAddressSeed(
+    [PDA_WALLET_SEED, seedGuardian.toBytes()],
+    PROGRAM_ID,
+  )[0];
+
   return;
 }
 
