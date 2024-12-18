@@ -11,7 +11,7 @@
           "isSigner": false
         },
         {
-          "name": "assignGuardian",
+          "name": "seedGuardian",
           "isMut": false,
           "isSigner": true
         },
@@ -105,7 +105,7 @@
           "isSigner": false
         },
         {
-          "name": "assignGuardian",
+          "name": "assignedGuardian",
           "isMut": false,
           "isSigner": false
         },
