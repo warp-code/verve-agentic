@@ -31,7 +31,6 @@ import {
   toAccountMetas,
 } from "@lightprotocol/stateless.js";
 import { Schema, serialize } from "borsh";
-import { bytes } from "@coral-xyz/anchor/dist/cjs/utils";
 
 export class CompressedAaPocProgram extends AaPocConstants {
   private static instance: CompressedAaPocProgram;
@@ -188,7 +187,7 @@ export class CompressedAaPocProgram extends AaPocConstants {
       )
       .accounts({
         payer: assignGuardian,
-        assignGuardian: assignGuardian,
+        seedGuardian: assignGuardian,
         wallet: wallet,
         ...this.lightAccounts(),
       })
@@ -259,7 +258,7 @@ export class CompressedAaPocProgram extends AaPocConstants {
       .accounts({
         payer: seedGuardian,
         seedGuardian: seedGuardian,
-        assignGuardian: assignGuardian,
+        assignedGuardian: assignGuardian,
         wallet: wallet,
         ...this.lightAccounts(),
       })

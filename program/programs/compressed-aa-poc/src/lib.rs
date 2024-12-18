@@ -24,12 +24,12 @@ pub mod compressed_aa_poc {
         ctx: LightContext<'_, '_, '_, 'info, InitWallet<'info>>,
     ) -> Result<()> {
         ctx.light_accounts.wallet_guardian.wallet = ctx.accounts.wallet.key();
-        ctx.light_accounts.wallet_guardian.guardian = ctx.accounts.assign_guardian.key();
+        ctx.light_accounts.wallet_guardian.guardian = ctx.accounts.seed_guardian.key();
 
         msg!(
             "Wallet {} has been initialized with guardian: {}",
             ctx.accounts.wallet.key(),
-            ctx.accounts.assign_guardian.key()
+            ctx.accounts.seed_guardian.key()
         );
 
         Ok(())
@@ -38,13 +38,13 @@ pub mod compressed_aa_poc {
     pub fn register_keypair<'info>(
         ctx: LightContext<'_, '_, '_, 'info, RegisterKeypair<'info>>,
     ) -> Result<()> {
-        ctx.light_accounts.wallet_guardian.guardian = ctx.accounts.assign_guardian.key();
+        ctx.light_accounts.wallet_guardian.guardian = ctx.accounts.assigned_guardian.key();
         ctx.light_accounts.wallet_guardian.wallet = ctx.accounts.wallet.key();
 
         msg!(
             "Wallet {} has new guardian: {}",
             ctx.accounts.wallet.key(),
-            ctx.accounts.assign_guardian.key()
+            ctx.accounts.assigned_guardian.key()
         );
 
         Ok(())
@@ -152,19 +152,19 @@ pub struct PeriodicApproval {
 pub struct InitWallet<'info> {
     /// CHECK: No need to have this account initialized lol
     #[account(
-        seeds=[PDA_WALLET_SEED, assign_guardian.key().as_ref()],
+        seeds=[PDA_WALLET_SEED, seed_guardian.key().as_ref()],
         bump
     )]
     pub wallet: AccountInfo<'info>,
 
     #[light_account(
         init,
-        seeds=[PDA_WALLET_GUARDIAN_SEED, wallet.key().as_ref(), assign_guardian.key().as_ref()],
+        seeds=[PDA_WALLET_GUARDIAN_SEED, wallet.key().as_ref(), seed_guardian.key().as_ref()],
     )]
     pub wallet_guardian: LightAccount<WalletGuardian>,
 
     #[account()]
-    pub assign_guardian: Signer<'info>,
+    pub seed_guardian: Signer<'info>,
 
     #[account(mut)]
     #[fee_payer]
@@ -189,13 +189,13 @@ pub struct RegisterKeypair<'info> {
 
     #[light_account(
         init,
-        seeds=[PDA_WALLET_GUARDIAN_SEED, wallet.key().as_ref(), assign_guardian.key().as_ref()],
+        seeds=[PDA_WALLET_GUARDIAN_SEED, wallet.key().as_ref(), assigned_guardian.key().as_ref()],
     )]
     pub wallet_guardian: LightAccount<WalletGuardian>,
 
     /// CHECK: we merely assign a new account as a guardian, no checks required
     #[account()]
-    pub assign_guardian: AccountInfo<'info>,
+    pub assigned_guardian: AccountInfo<'info>,
 
     #[account()]
     pub seed_guardian: Signer<'info>,
