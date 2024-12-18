@@ -1,6 +1,5 @@
 import { BN, getProvider, Program } from "@coral-xyz/anchor";
-import idl from "../target/idl/compressed_aa_poc.json";
-import { CompressedAaPoc } from "../target/types/compressed_aa_poc";
+import { IDL, CompressedAaPoc } from "../target/types/compressed_aa_poc";
 import { WalletGuardian, VerveInstruction } from "./types";
 import {
   AaPocConstants,
@@ -62,7 +61,7 @@ export class CompressedAaPocProgram extends AaPocConstants {
       const provider = getProvider();
 
       this._program = new Program(
-        idl as unknown as CompressedAaPoc,
+        IDL,
         CompressedAaPocProgram.programId,
         provider
       );
