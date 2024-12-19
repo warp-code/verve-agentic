@@ -2,9 +2,12 @@
   "name": "verve-agentic",
   "private": true,
   "workspaces": [
-    "chatbot",
+    "example",
     "program",
     "sdk",
     "web-ui"
-  ]
+  ],
+  "resolutions": {
+    "ajv": "^8.17.1"
+  }
 }
