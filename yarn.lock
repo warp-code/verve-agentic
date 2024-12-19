@@ -6403,7 +6403,7 @@ onetime@^6.0.0:
 
 openai@^4.77.0:
   version "4.77.0"
-  resolved "https://registry.npmjs.org/openai/-/openai-4.77.0.tgz"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.77.0.tgz#228f2d43ffa79ae9d8b5d4155e965da82e5ac330"
   integrity sha512-WWacavtns/7pCUkOWvQIjyOfcdr9X+9n9Vvb0zFeKVDAqwCMDHB+iSr24SVaBAhplvSG6JrRXFpcNM9gWhOGIw==
   dependencies:
     "@types/node" "^18.11.18"

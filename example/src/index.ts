@@ -1,7 +1,7 @@
 import openai from "./openai";
 import readlineSync from "readline-sync";
 import colors from "colors";
-import type { ChatCompletionTool, FunctionDefinition } from "openai/resources";
+import type { ChatCompletionTool } from "openai/resources";
 
 // Define available tools/functions
 const availableTools: ChatCompletionTool[] = [
@@ -63,16 +63,20 @@ async function handleToolCalls(toolCalls: any[]) {
 }
 
 async function main() {
-  console.log(colors.bold.green("Welcome to the Chatbot Program !"));
-  console.log(colors.bold.green("You can start chating with the bot"));
+  console.log(colors.bold.green("Welcome to the Chatbot Program!"));
+  console.log(colors.bold.green("You can start chatting with the bot"));
 
-  const chatHistory = []; //Store conversation hisory
+  const chatHistory = []; // Store conversation history
 
   while (true) {
     const userInput = readlineSync.question(colors.yellow("You: "));
 
+    if (userInput.toLowerCase() === "exit") {
+      return;
+    }
+
     try {
-      //Construct messages by iterating over the history
+      // Construct messages by iterating over the history
       const messages: any = chatHistory.map(([role, content]) => ({
         role,
         content,
@@ -81,26 +85,67 @@ async function main() {
       // Add latest user input
       messages.push({ role: "user", content: userInput });
 
-      //Call API with user input
+      // Call API with user input and tool definitions
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: messages,
-        // tools: availableTools,
-        // tool_choice: "auto",
+        tools: availableTools,
+        tool_choice: "auto",
       });
 
-      const completionText = completion.choices[0]!.message.content;
+      const responseMessage = completion.choices[0]?.message;
 
-      if (userInput.toLocaleLowerCase() == "exit") {
-        console.log(colors.green("Bot: ") + completionText);
-        return;
+      if (!responseMessage) {
+        throw new Error("No response received from API");
       }
 
-      console.log(colors.green("Bot: ") + completionText);
+      // Handle tool calls if present
+      if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+        console.log(
+          colors.blue("Bot is using tools to process your request..."),
+        );
 
-      //Update history with user input and assistant response
-      chatHistory.push(["user", userInput]);
-      chatHistory.push(["assistant", completionText]);
+        // Execute tool calls
+        const toolResults = await handleToolCalls(responseMessage.tool_calls);
+
+        // Add tool calls and results to messages
+        messages.push(responseMessage);
+
+        for (let tcr of toolResults) {
+          messages.push({
+            role: "tool",
+            content: tcr.output,
+            tool_call_id: tcr.tool_call_id,
+          });
+        }
+        // messages.push({
+        //   role: "tool",
+        //   content: JSON.stringify(toolResults),
+        //   tool_call_id: responseMessage.tool_calls[0]!.id,
+        // });
+
+        // Get final response after tool use
+        const finalCompletion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: messages,
+        });
+
+        const completionText = finalCompletion.choices[0]?.message.content;
+        console.log(colors.green("Bot: ") + completionText);
+
+        // Update history with user input and final assistant response
+        chatHistory.push(["user", userInput]);
+        chatHistory.push(["assistant", completionText]);
+      } else {
+        // Handle regular response without tool calls
+        const completionText = responseMessage.content;
+
+        console.log(colors.green("Bot: ") + completionText);
+
+        // Update history with user input and assistant response
+        chatHistory.push(["user", userInput]);
+        chatHistory.push(["assistant", completionText]);
+      }
     } catch (error) {
       console.error(colors.red(error as string));
     }
