@@ -1,0 +1,10 @@
+{
+  "name": "verve-agentic",
+  "private": true,
+  "workspaces": [
+    "chatbot",
+    "program",
+    "sdk",
+    "web-ui"
+  ]
+}
