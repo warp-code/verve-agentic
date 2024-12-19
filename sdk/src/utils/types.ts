@@ -1,3 +1,4 @@
+import type { PackedMerkleContext } from "@lightprotocol/stateless.js";
 import type { PublicKey } from "@solana/web3.js";
 
 export interface WalletGuardian {
@@ -36,4 +37,25 @@ export interface InstructionAccountMeta {
   accounts: PublicKey[];
   writables: boolean[];
   signers: boolean[];
+}
+
+export interface PackNewCompressedAccounts {
+  addressMerkleContext: {
+    addressMerkleTreePubkeyIndex: number;
+    addressQueuePubkeyIndex: number;
+  };
+  addressMerkleTreeRootIndex: number;
+  merkleContext: PackedMerkleContext;
+  remainingAccounts: PublicKey[];
+}
+
+export interface PackWithInputCompressedAccounts {
+  addressMerkleContext: {
+    addressMerkleTreePubkeyIndex: number;
+    addressQueuePubkeyIndex: number;
+  };
+  addressMerkleTreeRootIndex: number;
+  merkleContext: PackedMerkleContext;
+  rootIndex: number;
+  remainingAccounts: PublicKey[];
 }

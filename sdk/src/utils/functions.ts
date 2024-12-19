@@ -30,7 +30,11 @@ import {
   PDA_WALLET_SEED,
   PROGRAM_ID,
 } from "./constants";
-import type { InstructionAccountMeta } from "./types";
+import type {
+  InstructionAccountMeta,
+  PackNewCompressedAccounts,
+  PackWithInputCompressedAccounts,
+} from "./types";
 import { IDL, type CompressedAaPoc } from "../idls/compressed_aa_poc";
 
 export function initializeProgram(): Program<CompressedAaPoc> {
@@ -217,7 +221,7 @@ export function packWithInput(
   outputCompressedAccounts: CompressedAccount[],
   newAddressesParams: NewAddressParams[],
   proof: CompressedProofWithContext,
-) {
+): PackWithInputCompressedAccounts {
   const {
     remainingAccounts: _remainingAccounts,
     packedInputCompressedAccounts,
@@ -278,7 +282,7 @@ export function packNew(
   outputCompressedAccounts: CompressedAccount[],
   newAddressesParams: NewAddressParams[],
   proof: CompressedProofWithContext,
-) {
+): PackNewCompressedAccounts {
   const { remainingAccounts: _remainingAccounts } = packCompressedAccounts(
     [],
     proof.rootIndices,
