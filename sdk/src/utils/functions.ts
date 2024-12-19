@@ -1,12 +1,14 @@
 import { BN, getProvider, Program } from "@coral-xyz/anchor";
 import {
   bn,
+  buildAndSignTx,
   buildTx,
   getIndexOrAdd,
   LightSystemProgram,
   packCompressedAccounts,
   packNewAddressParams,
   Rpc,
+  sendAndConfirmTx,
   type CompressedAccount,
   type CompressedAccountWithMerkleContext,
   type CompressedProofWithContext,
@@ -16,12 +18,18 @@ import {
 import { keccak_256 } from "@noble/hashes/sha3";
 import {
   ComputeBudgetProgram,
+  Keypair,
   PublicKey,
   VersionedTransaction,
   type AccountMeta,
   type TransactionInstruction,
 } from "@solana/web3.js";
-import { LIGHT_STATE_TREE_ACCOUNTS, PROGRAM_ID } from "./constants";
+import {
+  LIGHT_STATE_TREE_ACCOUNTS,
+  PDA_WALLET_GUARDIAN_SEED,
+  PDA_WALLET_SEED,
+  PROGRAM_ID,
+} from "./constants";
 import type { InstructionAccountMeta } from "./types";
 import { IDL, type CompressedAaPoc } from "../idls/compressed_aa_poc";
 
@@ -52,6 +60,23 @@ export function deriveAddressSeed(
   const inputs: Uint8Array[] = [programId.toBytes(), ...seeds];
 
   return hashvToBn254FieldSizeBe(inputs);
+}
+
+export function deriveWalletAddress(seedGuardian: PublicKey): PublicKey {
+  return PublicKey.findProgramAddressSync(
+    [PDA_WALLET_SEED, seedGuardian.toBytes()],
+    PROGRAM_ID,
+  )[0];
+}
+
+export function deriveWalletGuardianSeed(
+  wallet: PublicKey,
+  guardian: PublicKey,
+): Uint8Array {
+  return deriveAddressSeed(
+    [PDA_WALLET_GUARDIAN_SEED, wallet.toBytes(), guardian.toBytes()],
+    PROGRAM_ID,
+  );
 }
 
 export function createNewAddressOutputState(
@@ -116,6 +141,34 @@ export async function buildTxWithComputeBudget(
     payerPubkey,
     blockhash,
   ) as unknown as VersionedTransaction;
+}
+
+export async function buildSignAndSendTransaction(
+  instruction: TransactionInstruction,
+  payer: Keypair,
+  rpc: Rpc,
+): Promise<string> {
+  const { blockhash } = await rpc.getLatestBlockhash();
+
+  const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+    units: 1_400_000,
+  });
+
+  const _addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports: 1,
+  });
+
+  const tx = buildAndSignTx(
+    [modifyComputeUnits, instruction],
+    payer,
+    blockhash,
+  );
+
+  const txSignature = await sendAndConfirmTx(rpc, tx, {
+    commitment: "confirmed",
+  });
+
+  return txSignature;
 }
 
 export function getInstructionAccountMeta(
@@ -262,8 +315,8 @@ export function packNew(
 
   return {
     addressMerkleContext: {
-      addressMerkleTreeAccountIndex,
-      addressQueueAccountIndex,
+      addressMerkleTreePubkeyIndex: addressMerkleTreeAccountIndex,
+      addressQueuePubkeyIndex: addressQueueAccountIndex,
     },
     addressMerkleTreeRootIndex,
     merkleContext,

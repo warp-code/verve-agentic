@@ -1,15 +1,86 @@
-import { Rpc } from "@lightprotocol/stateless.js";
-import { PDA_WALLET_SEED, PROGRAM_ID } from "./utils/constants";
-import { PublicKey } from "@solana/web3.js";
-import { deriveAddressSeed } from "./utils/functions";
+import {
+  CompressedAccount,
+  createRpc,
+  deriveAddress,
+  NewAddressParams,
+} from "@lightprotocol/stateless.js";
+import { LIGHT_ACCOUNTS, LIGHT_STATE_TREE_ACCOUNTS } from "./utils/constants";
+import { Keypair, PublicKey } from "@solana/web3.js";
+import {
+  buildSignAndSendTransaction,
+  createNewAddressOutputState,
+  deriveWalletAddress,
+  deriveWalletGuardianSeed,
+  formatRemainingAccounts,
+  getNewAddressParams,
+  getValidityProof,
+  initializeProgram,
+  packNew,
+} from "./utils/functions";
 
-export function createWallet(rpc: Rpc, seedGuardian: PublicKey) {
-  const _wallet = deriveAddressSeed(
-    [PDA_WALLET_SEED, seedGuardian.toBytes()],
-    PROGRAM_ID,
-  )[0];
+export async function createWallet(
+  seedGuardian: Keypair,
+  rpcUrl: string | undefined,
+): Promise<string> {
+  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
+  const program = initializeProgram();
 
-  return;
+  const wallet = deriveWalletAddress(seedGuardian.publicKey);
+  const walletGuardianSeed = deriveWalletGuardianSeed(
+    wallet,
+    seedGuardian.publicKey,
+  );
+  const walletGuardianAddress: PublicKey = deriveAddress(
+    walletGuardianSeed,
+    LIGHT_STATE_TREE_ACCOUNTS.addressTree,
+  );
+
+  const newUniqueAddresses: PublicKey[] = [];
+
+  newUniqueAddresses.push(walletGuardianAddress);
+
+  const proof = await getValidityProof(rpc, undefined, newUniqueAddresses);
+
+  const newAddressesParams: NewAddressParams[] = [];
+
+  newAddressesParams.push(getNewAddressParams(walletGuardianSeed, proof));
+
+  const outputCompressedAccounts: CompressedAccount[] = [];
+
+  outputCompressedAccounts.push(
+    ...createNewAddressOutputState(walletGuardianAddress),
+  );
+
+  const {
+    addressMerkleContext,
+    addressMerkleTreeRootIndex,
+    merkleContext,
+    remainingAccounts,
+  } = packNew(outputCompressedAccounts, newAddressesParams, proof);
+
+  const ix = await program.methods
+    .initWallet(
+      [], // inputs
+      proof.compressedProof, // proof
+      merkleContext, // merkleContext
+      0, // merkleTreeRootIndex
+      addressMerkleContext, // addressMerkleContext
+      addressMerkleTreeRootIndex, // addressMerkleTreeRootIndex
+    )
+    .accounts({
+      payer: seedGuardian.publicKey,
+      seedGuardian: seedGuardian.publicKey,
+      wallet: wallet,
+      ...LIGHT_ACCOUNTS,
+    })
+    .remainingAccounts(formatRemainingAccounts(remainingAccounts))
+    .instruction();
+
+  const signature = await buildSignAndSendTransaction(ix, seedGuardian, rpc);
+
+  console.log(signature);
+
+  return signature;
 }
 
 export function addGuardian() {
