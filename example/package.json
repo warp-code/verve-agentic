@@ -1,0 +1,34 @@
+{
+  "name": "@verve-agentic/example",
+  "version": "1.0.0",
+  "description": "Example console chat interface which can utilize the Verve agentic SDK",
+  "files": [
+    "src/"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.ts --trace-depreciation"
+  },
+  "dependencies": {
+    "colors": "^1.4.0",
+    "dotenv": "^16.4.7",
+    "openai": "^4.77.0",
+    "readline-sync": "^1.4.10"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/node": "^22",
+    "@types/readline-sync": "^1.4.8",
+    "@typescript-eslint/eslint-plugin": "^8.14.0",
+    "@typescript-eslint/parser": "^8.14.0",
+    "eslint": "^9.14.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.12.0",
+    "prettier": "^3.3.3",
+    "shx": "^0.3.4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.14.0"
+  }
+}

@@ -1,0 +1,5 @@
+coverage
+lib
+node_modules
+tsconfig.vitest-temp.json
+.env
