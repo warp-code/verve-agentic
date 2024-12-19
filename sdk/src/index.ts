@@ -1,8 +1,8 @@
 import {
-  CompressedAccount,
   createRpc,
   deriveAddress,
-  NewAddressParams,
+  type CompressedAccount,
+  type NewAddressParams,
 } from "@lightprotocol/stateless.js";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { LIGHT_ACCOUNTS, LIGHT_STATE_TREE_ACCOUNTS } from "./utils/constants";
