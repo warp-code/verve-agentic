@@ -4,8 +4,8 @@ import {
   deriveAddress,
   NewAddressParams,
 } from "@lightprotocol/stateless.js";
-import { LIGHT_ACCOUNTS, LIGHT_STATE_TREE_ACCOUNTS } from "./utils/constants";
 import { Keypair, PublicKey } from "@solana/web3.js";
+import { LIGHT_ACCOUNTS, LIGHT_STATE_TREE_ACCOUNTS } from "./utils/constants";
 import {
   buildSignAndSendTransaction,
   createNewAddressOutputState,
@@ -20,7 +20,7 @@ import {
 
 export async function createWallet(
   seedGuardian: Keypair,
-  rpcUrl: string | undefined,
+  rpcUrl?: string,
 ): Promise<string> {
   const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
   const program = initializeProgram();
@@ -36,17 +36,14 @@ export async function createWallet(
   );
 
   const newUniqueAddresses: PublicKey[] = [];
-
   newUniqueAddresses.push(walletGuardianAddress);
 
   const proof = await getValidityProof(rpc, undefined, newUniqueAddresses);
 
   const newAddressesParams: NewAddressParams[] = [];
-
   newAddressesParams.push(getNewAddressParams(walletGuardianSeed, proof));
 
   const outputCompressedAccounts: CompressedAccount[] = [];
-
   outputCompressedAccounts.push(
     ...createNewAddressOutputState(walletGuardianAddress),
   );
@@ -78,13 +75,71 @@ export async function createWallet(
 
   const signature = await buildSignAndSendTransaction(ix, seedGuardian, rpc);
 
-  console.log(signature);
+  console.log("signature: ", signature);
 
   return signature;
 }
 
-export function addGuardian() {
-  return;
+export async function addGuardian(
+  seedGuardian: Keypair,
+  assignedGuardian: PublicKey,
+  rpcUrl?: string,
+) {
+  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
+  const program = initializeProgram();
+
+  const wallet = deriveWalletAddress(seedGuardian.publicKey);
+
+  const walletGuardianSeed = deriveWalletGuardianSeed(wallet, assignedGuardian);
+  const walletGuardianAddress = deriveAddress(
+    walletGuardianSeed,
+    LIGHT_STATE_TREE_ACCOUNTS.addressTree,
+  );
+
+  const newUniqueAddresses: PublicKey[] = [];
+  newUniqueAddresses.push(walletGuardianAddress);
+
+  const proof = await getValidityProof(rpc, undefined, newUniqueAddresses);
+
+  const newAddressesParams: NewAddressParams[] = [];
+  newAddressesParams.push(getNewAddressParams(walletGuardianSeed, proof));
+
+  const outputCompressedAccounts: CompressedAccount[] = [];
+  outputCompressedAccounts.push(
+    ...createNewAddressOutputState(walletGuardianAddress),
+  );
+
+  const {
+    addressMerkleContext,
+    addressMerkleTreeRootIndex,
+    merkleContext,
+    remainingAccounts,
+  } = packNew(outputCompressedAccounts, newAddressesParams, proof);
+
+  const ix = await program.methods
+    .registerKeypair(
+      [], // inputs
+      proof.compressedProof, // proof
+      merkleContext, // merkleContext
+      0, // merkleTreeRootIndex
+      addressMerkleContext, // addressMerkleContext
+      addressMerkleTreeRootIndex, // addressMerkleTreeRootIndex
+    )
+    .accounts({
+      payer: seedGuardian.publicKey,
+      seedGuardian: seedGuardian.publicKey,
+      assignedGuardian: assignedGuardian,
+      wallet: wallet,
+      ...LIGHT_ACCOUNTS,
+    })
+    .remainingAccounts(formatRemainingAccounts(remainingAccounts))
+    .instruction();
+
+  const signature = await buildSignAndSendTransaction(ix, seedGuardian, rpc);
+
+  console.log("signature: ", signature);
+
+  return signature;
 }
 
 export function checkSplBalance() {
