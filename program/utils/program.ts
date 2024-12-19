@@ -1,6 +1,5 @@
 import { BN, getProvider, Program } from "@coral-xyz/anchor";
-import idl from "../target/idl/compressed_aa_poc.json";
-import { CompressedAaPoc } from "../target/types/compressed_aa_poc";
+import { IDL, CompressedAaPoc } from "../target/types/compressed_aa_poc";
 import { WalletGuardian, VerveInstruction } from "./types";
 import {
   AaPocConstants,
@@ -31,7 +30,6 @@ import {
   toAccountMetas,
 } from "@lightprotocol/stateless.js";
 import { Schema, serialize } from "borsh";
-import { bytes } from "@coral-xyz/anchor/dist/cjs/utils";
 
 export class CompressedAaPocProgram extends AaPocConstants {
   private static instance: CompressedAaPocProgram;
@@ -63,7 +61,7 @@ export class CompressedAaPocProgram extends AaPocConstants {
       const provider = getProvider();
 
       this._program = new Program(
-        idl as unknown as CompressedAaPoc,
+        IDL,
         CompressedAaPocProgram.programId,
         provider
       );
@@ -188,7 +186,7 @@ export class CompressedAaPocProgram extends AaPocConstants {
       )
       .accounts({
         payer: assignGuardian,
-        assignGuardian: assignGuardian,
+        seedGuardian: assignGuardian,
         wallet: wallet,
         ...this.lightAccounts(),
       })
@@ -259,7 +257,7 @@ export class CompressedAaPocProgram extends AaPocConstants {
       .accounts({
         payer: seedGuardian,
         seedGuardian: seedGuardian,
-        assignGuardian: assignGuardian,
+        assignedGuardian: assignGuardian,
         wallet: wallet,
         ...this.lightAccounts(),
       })

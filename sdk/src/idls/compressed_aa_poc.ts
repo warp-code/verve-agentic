@@ -11,7 +11,7 @@ export type CompressedAaPoc = {
           "isSigner": false
         },
         {
-          "name": "assignGuardian",
+          "name": "seedGuardian",
           "isMut": false,
           "isSigner": true
         },
@@ -105,7 +105,7 @@ export type CompressedAaPoc = {
           "isSigner": false
         },
         {
-          "name": "assignGuardian",
+          "name": "assignedGuardian",
           "isMut": false,
           "isSigner": false
         },
@@ -521,7 +521,7 @@ export const IDL: CompressedAaPoc = {
           "isSigner": false
         },
         {
-          "name": "assignGuardian",
+          "name": "seedGuardian",
           "isMut": false,
           "isSigner": true
         },
@@ -615,7 +615,7 @@ export const IDL: CompressedAaPoc = {
           "isSigner": false
         },
         {
-          "name": "assignGuardian",
+          "name": "assignedGuardian",
           "isMut": false,
           "isSigner": false
         },

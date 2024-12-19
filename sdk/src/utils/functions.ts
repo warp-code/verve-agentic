@@ -2,6 +2,7 @@ import { BN, getProvider, Program } from "@coral-xyz/anchor";
 import {
   bn,
   buildTx,
+  getIndexOrAdd,
   LightSystemProgram,
   packCompressedAccounts,
   packNewAddressParams,
@@ -10,51 +11,24 @@ import {
   type CompressedAccountWithMerkleContext,
   type CompressedProofWithContext,
   type NewAddressParams,
+  type PackedMerkleContext,
 } from "@lightprotocol/stateless.js";
 import { keccak_256 } from "@noble/hashes/sha3";
 import {
   ComputeBudgetProgram,
   PublicKey,
+  VersionedTransaction,
+  type AccountMeta,
   type TransactionInstruction,
 } from "@solana/web3.js";
-import {
-  LIGHT_STATE_TREE_ACCOUNTS,
-  PDA_WALLET_GUARDIAN_SEED,
-  PDA_WALLET_SEED,
-  PROGRAM_ID,
-} from "./constants";
-import type { CompressedAaPoc } from "../idls/compressed_aa_poc";
-import idl from "../idls/compressed_aa_poc.json";
+import { LIGHT_STATE_TREE_ACCOUNTS, PROGRAM_ID } from "./constants";
 import type { InstructionAccountMeta } from "./types";
+import { IDL, type CompressedAaPoc } from "../idls/compressed_aa_poc";
 
 export function initializeProgram(): Program<CompressedAaPoc> {
   const provider = getProvider();
 
-  return new Program(idl as unknown as CompressedAaPoc, PROGRAM_ID, provider);
-}
-
-export function deriveSeed(seeds: Uint8Array[]): Uint8Array {
-  const combinedSeeds: Uint8Array[] = [PROGRAM_ID.toBytes(), ...seeds];
-
-  return hashvToBn254FieldSizeBe(combinedSeeds);
-}
-
-export function deriveWalletAddress(seedGuardian: PublicKey): PublicKey {
-  return PublicKey.findProgramAddressSync(
-    [PDA_WALLET_SEED, seedGuardian.toBytes()],
-    PROGRAM_ID,
-  )[0];
-}
-
-export function deriveWalletGuardianSeed(
-  wallet: PublicKey,
-  guardian: PublicKey,
-): Uint8Array {
-  return deriveSeed([
-    PDA_WALLET_GUARDIAN_SEED,
-    wallet.toBytes(),
-    guardian.toBytes(),
-  ]);
+  return new Program(IDL, PROGRAM_ID, provider);
 }
 
 export function hashvToBn254FieldSizeBe(bytes: Uint8Array[]): Uint8Array {
@@ -69,6 +43,15 @@ export function hashvToBn254FieldSizeBe(bytes: Uint8Array[]): Uint8Array {
   hash[0] = 0;
 
   return hash;
+}
+
+export function deriveAddressSeed(
+  seeds: Uint8Array[],
+  programId: PublicKey,
+): Uint8Array {
+  const inputs: Uint8Array[] = [programId.toBytes(), ...seeds];
+
+  return hashvToBn254FieldSizeBe(inputs);
 }
 
 export function createNewAddressOutputState(
@@ -119,7 +102,7 @@ export async function buildTxWithComputeBudget(
   rpc: Rpc,
   instructions: TransactionInstruction[],
   payerPubkey: PublicKey,
-) {
+): Promise<VersionedTransaction> {
   const setComputeUnitIx = ComputeBudgetProgram.setComputeUnitLimit({
     units: 2_000_000,
   });
@@ -128,7 +111,11 @@ export async function buildTxWithComputeBudget(
 
   const { blockhash } = await rpc.getLatestBlockhash();
 
-  return buildTx(instructions, payerPubkey, blockhash);
+  return buildTx(
+    instructions,
+    payerPubkey,
+    blockhash,
+  ) as unknown as VersionedTransaction;
 }
 
 export function getInstructionAccountMeta(
@@ -179,47 +166,45 @@ export function packWithInput(
   proof: CompressedProofWithContext,
 ) {
   const {
+    remainingAccounts: _remainingAccounts,
     packedInputCompressedAccounts,
-    remainingAccounts: remainingAccounts1,
   } = packCompressedAccounts(
     inputCompressedAccounts,
     proof.rootIndices,
     outputCompressedAccounts,
   );
 
+  const { newAddressParamsPacked, remainingAccounts } = packNewAddressParams(
+    newAddressesParams,
+    _remainingAccounts,
+  );
+
   let addressMerkleTreeAccountIndex: number,
     addressMerkleTreeRootIndex: number,
     addressQueueAccountIndex: number;
 
-  let remainingAccounts: PublicKey[] = remainingAccounts1;
-
-  if (newAddressesParams.length) {
-    const { newAddressParamsPacked, remainingAccounts: remainingAccounts2 } =
-      packNewAddressParams(newAddressesParams, remainingAccounts1);
-
-    const params = newAddressParamsPacked[0];
-
-    if (!params) {
-      throw "";
-    }
-
-    addressMerkleTreeAccountIndex = params.addressMerkleTreeAccountIndex;
-    addressMerkleTreeRootIndex = params.addressMerkleTreeRootIndex;
-    addressQueueAccountIndex = params.addressQueueAccountIndex;
-
-    remainingAccounts = remainingAccounts2;
-  } else {
-    addressMerkleTreeRootIndex = 0;
-
-    remainingAccounts.push(LIGHT_STATE_TREE_ACCOUNTS.addressTree);
-    addressMerkleTreeAccountIndex = remainingAccounts.length - 1;
-
-    remainingAccounts.push(LIGHT_STATE_TREE_ACCOUNTS.addressQueue);
-    addressQueueAccountIndex = remainingAccounts.length - 1;
+  if (!packedInputCompressedAccounts[0]) {
+    throw "No packed input compressed accounts";
   }
 
-  if (!packedInputCompressedAccounts[0]) {
-    throw "";
+  try {
+    ({
+      addressMerkleTreeAccountIndex,
+      addressMerkleTreeRootIndex,
+      addressQueueAccountIndex,
+    } = newAddressParamsPacked[0]!);
+  } catch {
+    addressMerkleTreeRootIndex = packedInputCompressedAccounts[0].rootIndex;
+
+    addressMerkleTreeAccountIndex = getIndexOrAdd(
+      remainingAccounts,
+      LIGHT_STATE_TREE_ACCOUNTS.addressTree,
+    );
+
+    addressQueueAccountIndex = getIndexOrAdd(
+      remainingAccounts,
+      LIGHT_STATE_TREE_ACCOUNTS.addressQueue,
+    );
   }
 
   const { rootIndex, merkleContext } = packedInputCompressedAccounts[0];
@@ -234,4 +219,67 @@ export function packWithInput(
     rootIndex,
     remainingAccounts,
   };
+}
+
+export function packNew(
+  outputCompressedAccounts: CompressedAccount[],
+  newAddressesParams: NewAddressParams[],
+  proof: CompressedProofWithContext,
+) {
+  const { remainingAccounts: _remainingAccounts } = packCompressedAccounts(
+    [],
+    proof.rootIndices,
+    outputCompressedAccounts,
+  );
+
+  const { newAddressParamsPacked, remainingAccounts } = packNewAddressParams(
+    newAddressesParams,
+    _remainingAccounts,
+  );
+
+  const merkleContext: PackedMerkleContext = {
+    leafIndex: 0,
+    merkleTreePubkeyIndex: getIndexOrAdd(
+      remainingAccounts,
+      LIGHT_STATE_TREE_ACCOUNTS.merkleTree,
+    ),
+    nullifierQueuePubkeyIndex: getIndexOrAdd(
+      remainingAccounts,
+      LIGHT_STATE_TREE_ACCOUNTS.nullifierQueue,
+    ),
+    queueIndex: null,
+  };
+
+  if (!newAddressParamsPacked[0]) {
+    throw "No new address params packed";
+  }
+
+  const {
+    addressMerkleTreeAccountIndex,
+    addressMerkleTreeRootIndex,
+    addressQueueAccountIndex,
+  } = newAddressParamsPacked[0];
+
+  return {
+    addressMerkleContext: {
+      addressMerkleTreeAccountIndex,
+      addressQueueAccountIndex,
+    },
+    addressMerkleTreeRootIndex,
+    merkleContext,
+    remainingAccounts,
+  };
+}
+
+export function formatRemainingAccounts(
+  remainingAccounts: PublicKey[],
+): AccountMeta[] {
+  return remainingAccounts.map(
+    account =>
+      <AccountMeta>{
+        pubkey: account,
+        isSigner: false,
+        isWritable: true,
+      },
+  );
 }
