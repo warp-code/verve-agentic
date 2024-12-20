@@ -36,18 +36,15 @@ import { type VerveInstruction } from "./utils/types";
 
 export async function createWallet(
   payer: Keypair,
-  seedGuardian: Keypair,
+  seedGuardian: PublicKey,
   provider: Provider,
   rpcUrl?: string,
 ): Promise<string> {
   const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
   const program = initializeProgram(provider);
 
-  const wallet = deriveWalletAddress(seedGuardian.publicKey);
-  const walletGuardianSeed = deriveWalletGuardianSeed(
-    wallet,
-    seedGuardian.publicKey,
-  );
+  const wallet = deriveWalletAddress(seedGuardian);
+  const walletGuardianSeed = deriveWalletGuardianSeed(wallet, seedGuardian);
   const walletGuardianAddress: PublicKey = deriveAddress(
     walletGuardianSeed,
     LIGHT_STATE_TREE_ACCOUNTS.addressTree,
@@ -84,7 +81,7 @@ export async function createWallet(
     )
     .accounts({
       payer: payer.publicKey,
-      seedGuardian: seedGuardian.publicKey,
+      seedGuardian: seedGuardian,
       wallet: wallet,
       ...LIGHT_ACCOUNTS,
     })
@@ -97,7 +94,8 @@ export async function createWallet(
 }
 
 export async function addGuardian(
-  seedGuardian: Keypair,
+  payer: Keypair,
+  seedGuardian: PublicKey,
   assignedGuardian: PublicKey,
   provider: Provider,
   rpcUrl?: string,
@@ -105,7 +103,7 @@ export async function addGuardian(
   const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
   const program = initializeProgram(provider);
 
-  const wallet = deriveWalletAddress(seedGuardian.publicKey);
+  const wallet = deriveWalletAddress(seedGuardian);
 
   const walletGuardianSeed = deriveWalletGuardianSeed(wallet, assignedGuardian);
   const walletGuardianAddress = deriveAddress(
@@ -143,8 +141,8 @@ export async function addGuardian(
       addressMerkleTreeRootIndex, // addressMerkleTreeRootIndex
     )
     .accounts({
-      payer: seedGuardian.publicKey,
-      seedGuardian: seedGuardian.publicKey,
+      payer: payer.publicKey,
+      seedGuardian: seedGuardian,
       assignedGuardian: assignedGuardian,
       wallet: wallet,
       ...LIGHT_ACCOUNTS,
@@ -152,7 +150,7 @@ export async function addGuardian(
     .remainingAccounts(formatLightRemainingAccounts(remainingAccounts))
     .instruction();
 
-  const signature = await buildSignAndSendTransaction(ix, seedGuardian, rpc);
+  const signature = await buildSignAndSendTransaction(ix, payer, rpc);
 
   return signature;
 }
