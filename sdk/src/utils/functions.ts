@@ -328,7 +328,7 @@ export function packNew(
   };
 }
 
-export function formatRemainingAccounts(
+export function formatLightRemainingAccounts(
   remainingAccounts: PublicKey[],
 ): AccountMeta[] {
   return remainingAccounts.map(
@@ -339,4 +339,24 @@ export function formatRemainingAccounts(
         isWritable: true,
       },
   );
+}
+
+export function formatInstructionRemainingAccounts(
+  instruction: TransactionInstruction,
+): AccountMeta[] {
+  return [
+    <AccountMeta>{
+      isSigner: false,
+      isWritable: false,
+      pubkey: instruction.programId,
+    },
+    ...instruction.keys.map(
+      key =>
+        <AccountMeta>{
+          isSigner: false,
+          isWritable: key.isWritable,
+          pubkey: key.pubkey,
+        },
+    ),
+  ];
 }
