@@ -2,16 +2,7 @@ import openai from "./openai";
 import readlineSync from "readline-sync";
 import colors from "colors";
 import type { ChatCompletionTool } from "openai/resources";
-import { AnchorProvider } from "@coral-xyz/anchor";
-import { createWallet } from "@verve-agentic/sdk";
 import { setupProvider } from "./utils";
-
-// import { createWallet } from "../../sdk/src/index";
-// import { initializeProgram } from "../../sdk/src/utils/functions";
-
-// const provider = AnchorProvider.env();
-
-// const program = initializeProgram(provider);
 
 // Define available tools/functions
 const availableTools: ChatCompletionTool[] = [
@@ -47,6 +38,8 @@ async function handleToolCalls(toolCalls: any[]) {
     if (toolCall.type === "function") {
       const functionName = toolCall.function.name;
       const functionArgs = JSON.parse(toolCall.function.arguments);
+
+      console.log(functionArgs);
 
       // Handle different function calls
       switch (functionName) {
