@@ -1,7 +1,7 @@
+import { type Provider } from "@coral-xyz/anchor";
 import {
   createRpc,
   deriveAddress,
-  Rpc,
   type CompressedAccount,
   type NewAddressParams,
 } from "@lightprotocol/stateless.js";
@@ -18,25 +18,13 @@ import {
   initializeProgram,
   packNew,
 } from "./utils/functions";
-import type { Provider } from "@coral-xyz/anchor";
 
 export async function createWallet(
   seedGuardian: Keypair,
   provider: Provider,
   rpcUrl?: string,
 ): Promise<string> {
-  let rpc: Rpc;
-
-  if (rpcUrl) {
-    rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
-  } else {
-    const providerRpc = provider.connection.rpcEndpoint;
-
-    rpc = createRpc(providerRpc, providerRpc, providerRpc, {
-      commitment: "confirmed",
-    });
-  }
-
+  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian.publicKey);
@@ -100,18 +88,7 @@ export async function addGuardian(
   provider: Provider,
   rpcUrl?: string,
 ) {
-  let rpc: Rpc;
-
-  if (rpcUrl) {
-    rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
-  } else {
-    const providerRpc = provider.connection.rpcEndpoint;
-
-    rpc = createRpc(providerRpc, providerRpc, providerRpc, {
-      commitment: "confirmed",
-    });
-  }
-
+  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian.publicKey);
