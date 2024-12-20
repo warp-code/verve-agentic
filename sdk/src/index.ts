@@ -1,6 +1,7 @@
 import {
   createRpc,
   deriveAddress,
+  Rpc,
   type CompressedAccount,
   type NewAddressParams,
 } from "@lightprotocol/stateless.js";
@@ -24,7 +25,18 @@ export async function createWallet(
   provider: Provider,
   rpcUrl?: string,
 ): Promise<string> {
-  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
+  let rpc: Rpc;
+
+  if (rpcUrl) {
+    rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
+  } else {
+    const providerRpc = provider.connection.rpcEndpoint;
+
+    rpc = createRpc(providerRpc, providerRpc, providerRpc, {
+      commitment: "confirmed",
+    });
+  }
+
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian.publicKey);
@@ -88,7 +100,18 @@ export async function addGuardian(
   provider: Provider,
   rpcUrl?: string,
 ) {
-  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
+  let rpc: Rpc;
+
+  if (rpcUrl) {
+    rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
+  } else {
+    const providerRpc = provider.connection.rpcEndpoint;
+
+    rpc = createRpc(providerRpc, providerRpc, providerRpc, {
+      commitment: "confirmed",
+    });
+  }
+
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian.publicKey);

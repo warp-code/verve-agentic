@@ -1,4 +1,3 @@
-import type { Program } from "@coral-xyz/anchor";
 import {
   defaultStaticAccountsStruct,
   defaultTestStateTreeAccounts,
@@ -6,9 +5,7 @@ import {
 } from "@lightprotocol/stateless.js";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
 import type { Schema } from "borsh";
-import { initializeProgram } from "./functions";
 import type { LightAccounts, LightStateTreeAccounts } from "./types";
-import type { CompressedAaPoc } from "../idls/compressed_aa_poc";
 
 export const PROGRAM_ID: PublicKey = new PublicKey(
   "Y3Fdm2T4ipYdaFBKxQb8M4QE8EgpxWAMa7c3q72vQhn",

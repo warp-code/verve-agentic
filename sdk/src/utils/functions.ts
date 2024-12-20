@@ -1,4 +1,4 @@
-import { BN, getProvider, Program, type Provider } from "@coral-xyz/anchor";
+import { BN, Program, type Provider } from "@coral-xyz/anchor";
 import {
   bn,
   buildAndSignTx,
