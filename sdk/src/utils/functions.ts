@@ -1,4 +1,4 @@
-import { BN, getProvider, Program } from "@coral-xyz/anchor";
+import { BN, getProvider, Program, type Provider } from "@coral-xyz/anchor";
 import {
   bn,
   buildAndSignTx,
@@ -37,9 +37,9 @@ import type {
 } from "./types";
 import { IDL, type CompressedAaPoc } from "../idls/compressed_aa_poc";
 
-export function initializeProgram(): Program<CompressedAaPoc> {
-  const provider = getProvider();
-
+export function initializeProgram(
+  provider: Provider,
+): Program<CompressedAaPoc> {
   return new Program(IDL, PROGRAM_ID, provider);
 }
 

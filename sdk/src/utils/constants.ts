@@ -43,8 +43,6 @@ export const PDA_WALLET_SEED: Uint8Array = Buffer.from("w");
 
 export const PDA_WALLET_GUARDIAN_SEED: Uint8Array = Buffer.from("wg");
 
-export const PROGRAM: Program<CompressedAaPoc> = initializeProgram();
-
 export const VERVE_INSTRUCTION_SCHEMA: Schema = {
   struct: {
     data: { array: { type: "u8" } },

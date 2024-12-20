@@ -2,6 +2,7 @@ import openai from "./openai";
 import readlineSync from "readline-sync";
 import colors from "colors";
 import type { ChatCompletionTool } from "openai/resources";
+import { createWallet } from "../../sdk/src/index";
 
 // Define available tools/functions
 const availableTools: ChatCompletionTool[] = [
