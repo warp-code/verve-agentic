@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "workspaces": [
+    "example",
+    "sdk",
+    "web-ui"
+  ]
+}

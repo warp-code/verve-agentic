@@ -2,7 +2,16 @@ import openai from "./openai";
 import readlineSync from "readline-sync";
 import colors from "colors";
 import type { ChatCompletionTool } from "openai/resources";
-import { createWallet } from "../../sdk/src/index";
+import { AnchorProvider } from "@coral-xyz/anchor";
+import { createWallet } from "@verve-agentic/sdk";
+import { setupProvider } from "./utils";
+
+// import { createWallet } from "../../sdk/src/index";
+// import { initializeProgram } from "../../sdk/src/utils/functions";
+
+// const provider = AnchorProvider.env();
+
+// const program = initializeProgram(provider);
 
 // Define available tools/functions
 const availableTools: ChatCompletionTool[] = [
@@ -64,6 +73,8 @@ async function handleToolCalls(toolCalls: any[]) {
 }
 
 async function main() {
+  await setupProvider();
+
   console.log(colors.bold.green("Welcome to the Chatbot Program!"));
   console.log(colors.bold.green("You can start chatting with the bot"));
 
