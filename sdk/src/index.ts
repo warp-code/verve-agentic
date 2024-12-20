@@ -17,13 +17,15 @@ import {
   initializeProgram,
   packNew,
 } from "./utils/functions";
+import type { Provider } from "@coral-xyz/anchor";
 
 export async function createWallet(
   seedGuardian: Keypair,
+  provider: Provider,
   rpcUrl?: string,
 ): Promise<string> {
   const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
-  const program = initializeProgram();
+  const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian.publicKey);
   const walletGuardianSeed = deriveWalletGuardianSeed(
@@ -83,10 +85,11 @@ export async function createWallet(
 export async function addGuardian(
   seedGuardian: Keypair,
   assignedGuardian: PublicKey,
+  provider: Provider,
   rpcUrl?: string,
 ) {
   const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
-  const program = initializeProgram();
+  const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian.publicKey);
 
