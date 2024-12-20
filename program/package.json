@@ -1,4 +1,6 @@
 {
+  "name": "@verve-agentic/program",
+  "version": "1.0.0",
   "license": "AGPL-3.0-only",
   "scripts": {
     "build": "yarn copy-keypairs && anchor build && bash ./copy_idls.sh",
