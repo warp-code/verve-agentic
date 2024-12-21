@@ -3,6 +3,7 @@ import {
   bn,
   createRpc,
   deriveAddress,
+  Rpc,
   type CompressedAccount,
   type NewAddressParams,
 } from "@lightprotocol/stateless.js";
@@ -35,12 +36,15 @@ import {
 import { type VerveInstruction } from "./utils/types";
 
 export async function createWallet(
+  provider: Provider,
+  rpc: Rpc,
   payer: Keypair,
   seedGuardian: PublicKey,
-  provider: Provider,
-  rpcUrl?: string,
-): Promise<string> {
-  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
+): Promise<{
+  signature: string;
+  walletAccountAddress: PublicKey;
+  walletGuardianAccountAddress: PublicKey;
+}> {
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian);
@@ -90,7 +94,11 @@ export async function createWallet(
 
   const signature = await buildSignAndSendTransaction(ix, payer, rpc);
 
-  return signature;
+  return {
+    signature,
+    walletAccountAddress: wallet,
+    walletGuardianAccountAddress: walletGuardianAddress,
+  };
 }
 
 export async function addGuardian(

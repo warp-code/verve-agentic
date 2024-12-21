@@ -1,11 +1,11 @@
 import openai from "./openai";
 import readlineSync from "readline-sync";
 import colors from "colors";
-import type { ChatCompletionTool } from "openai/resources";
+import { OpenAI } from "openai";
 import { setupProvider } from "./utils";
 
 // Define available tools/functions
-const availableTools: ChatCompletionTool[] = [
+const availableTools: OpenAI.ChatCompletionTool[] = [
   {
     type: "function",
     function: {

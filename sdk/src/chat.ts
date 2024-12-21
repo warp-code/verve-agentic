@@ -1,3 +1,4 @@
+import OpenAI from "openai";
 import {
   addGuardian,
   checkSplBalance,
@@ -6,6 +7,39 @@ import {
   transferSol,
   transferSplToken,
 } from "./index";
+import { Provider, Wallet } from "@coral-xyz/anchor";
+import { Rpc } from "@lightprotocol/stateless.js";
+
+type VerveTool = OpenAI.ChatCompletionTool & {
+  handler: (
+    provider: Provider,
+    wallet: Wallet,
+    rpc: Rpc,
+    params: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>;
+};
+
+const functions2: VerveTool[] = [
+  {
+    type: "function",
+    function: {
+      name: "createWallet",
+      description:
+        "Creates a new Verve wallet with the agent's wallet as the initial guardian",
+      parameters: {},
+    },
+    handler: async (provider, wallet, rpc, _params) => {
+      const { walletAccountAddress } = await createWallet(
+        provider,
+        rpc,
+        wallet.payer,
+        wallet.publicKey,
+      );
+
+      return { walletAccountAddress };
+    },
+  },
+];
 
 const functions = [
   {
