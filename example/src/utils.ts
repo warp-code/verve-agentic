@@ -1,8 +1,12 @@
 import { AnchorProvider, setProvider, Wallet } from "@coral-xyz/anchor";
+import { createRpc } from "@lightprotocol/stateless.js";
 import { Connection, Keypair } from "@solana/web3.js";
 import colors from "colors";
+import dotenv from "dotenv";
 
-export const setupProvider = async () => {
+dotenv.config();
+
+export const setup = async () => {
   // Create connection to local cluster
   const connection = new Connection("http://localhost:8899", "confirmed");
 
@@ -42,8 +46,13 @@ export const setupProvider = async () => {
 
   console.log(colors.bold.blue("Airdropped5 SOL to wallet"));
 
+  const rpc = createRpc(undefined, undefined, undefined, {
+    commitment: "confirmed",
+  });
+
   return {
     wallet,
     provider,
+    rpc,
   };
 };

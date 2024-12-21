@@ -1,37 +1,18 @@
 import openai from "./openai";
 import readlineSync from "readline-sync";
 import colors from "colors";
-import { OpenAI } from "openai";
-import { setupProvider } from "./utils";
-
-// Define available tools/functions
-const availableTools: OpenAI.ChatCompletionTool[] = [
-  {
-    type: "function",
-    function: {
-      name: "get_current_weather",
-      description: "Get the current weather in a given location",
-      parameters: {
-        type: "object",
-        properties: {
-          location: {
-            type: "string",
-            description: "The city and state, e.g. San Francisco, CA",
-          },
-          unit: {
-            type: "string",
-            enum: ["celsius", "fahrenheit"],
-          },
-        },
-        required: ["location"],
-      },
-    },
-  },
-  // Add more tools here as needed
-];
+import { setup } from "./utils";
+import { tools } from "@verve-agentic/sdk";
+import type { Provider, Wallet } from "@coral-xyz/anchor";
+import type { Rpc } from "@lightprotocol/stateless.js";
 
 // Function to handle tool calls
-async function handleToolCalls(toolCalls: any[]) {
+async function handleToolCalls(
+  toolCalls: any[],
+  provider: Provider,
+  rpc: Rpc,
+  wallet: Wallet,
+) {
   const toolResults = [];
 
   for (const toolCall of toolCalls) {
@@ -39,26 +20,23 @@ async function handleToolCalls(toolCalls: any[]) {
       const functionName = toolCall.function.name;
       const functionArgs = JSON.parse(toolCall.function.arguments);
 
-      console.log(functionArgs);
+      const selectedTool = tools.find(x => x.function.name === functionName);
 
-      // Handle different function calls
-      switch (functionName) {
-        case "get_current_weather":
-          // Implement actual weather API call here
-          const weatherResult = {
-            temperature: 22,
-            unit: functionArgs.unit || "celsius",
-            description: "Sunny",
-          };
-          toolResults.push({
-            tool_call_id: toolCall.id,
-            output: JSON.stringify(weatherResult),
-          });
-          break;
-        // Add more function handlers here
-        default:
-          throw new Error(`Unknown function: ${functionName}`);
+      if (selectedTool == null) {
+        throw new Error(`Unknown function: ${functionName}`);
       }
+
+      const result = await selectedTool.handler(
+        provider,
+        wallet,
+        rpc,
+        functionArgs,
+      );
+
+      toolResults.push({
+        tool_call_id: toolCall.id,
+        output: JSON.stringify(result),
+      });
     }
   }
 
@@ -66,7 +44,7 @@ async function handleToolCalls(toolCalls: any[]) {
 }
 
 async function main() {
-  await setupProvider();
+  const { provider, rpc, wallet } = await setup();
 
   console.log(colors.bold.green("Welcome to the Chatbot Program!"));
   console.log(colors.bold.green("You can start chatting with the bot"));
@@ -94,7 +72,7 @@ async function main() {
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: messages,
-        tools: availableTools,
+        tools: tools,
         tool_choice: "auto",
       });
 
@@ -111,7 +89,12 @@ async function main() {
         );
 
         // Execute tool calls
-        const toolResults = await handleToolCalls(responseMessage.tool_calls);
+        const toolResults = await handleToolCalls(
+          responseMessage.tool_calls,
+          provider,
+          rpc,
+          wallet,
+        );
 
         // Add tool calls and results to messages
         messages.push(responseMessage);

@@ -1,13 +1,7 @@
 import OpenAI from "openai";
-import {
-  addGuardian,
-  checkSplBalance,
-  createTokenAccount,
-  createWallet,
-  transferSol,
-  transferSplToken,
-} from "./index";
-import { Provider, Wallet } from "@coral-xyz/anchor";
+import { createWallet } from "./functions";
+import type { Provider } from "@coral-xyz/anchor";
+import { Wallet } from "@coral-xyz/anchor";
 import { Rpc } from "@lightprotocol/stateless.js";
 
 type VerveTool = OpenAI.ChatCompletionTool & {
@@ -19,7 +13,7 @@ type VerveTool = OpenAI.ChatCompletionTool & {
   ) => Promise<Record<string, unknown>>;
 };
 
-const functions2: VerveTool[] = [
+export const functions: VerveTool[] = [
   {
     type: "function",
     function: {
@@ -41,7 +35,7 @@ const functions2: VerveTool[] = [
   },
 ];
 
-const functions = [
+const functions_alt = [
   {
     name: "createWallet",
     description: "Creates a new Verve wallet with an initial guardian",
