@@ -1,4 +1,5 @@
-import { createWallet } from "./functions";
+import { PublicKey } from "@solana/web3.js";
+import { addGuardian, createWallet } from "./functions";
 import type { VerveTool } from "./utils/types";
 
 export const functions: VerveTool[] = [
@@ -11,14 +12,50 @@ export const functions: VerveTool[] = [
       parameters: {},
     },
     handler: async (provider, wallet, rpc, _params) => {
-      const { walletAccountAddress } = await createWallet(
+      const { signature, walletAccountAddress } = await createWallet(
         provider,
         rpc,
         wallet.payer,
         wallet.publicKey,
       );
 
-      return { walletAccountAddress };
+      return { signature, walletAccountAddress };
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "addGuardian",
+      description: "Adds a wallet guardian to an existing Verve wallet",
+      strict: true,
+      parameters: {
+        type: "object",
+        properties: {
+          assignedGuardian: {
+            type: "string",
+            description:
+              "The public key that is going to become the wallet guardian",
+          },
+        },
+        required: ["assignedGuardian"],
+        additionalProperties: false,
+      },
+    },
+    handler: async (provider, wallet, rpc, params) => {
+      const assignedGuardian = new PublicKey(
+        params["assignedGuardian"] as string,
+      );
+
+      const { signature, walletAccountAddress, walletGuardianAccountAddress } =
+        await addGuardian(
+          provider,
+          rpc,
+          wallet.payer,
+          wallet.publicKey,
+          assignedGuardian,
+        );
+
+      return { signature, walletAccountAddress, walletGuardianAccountAddress };
     },
   },
 ];

@@ -115,7 +115,11 @@ export async function addGuardian(
   payer: Keypair,
   seedGuardian: PublicKey,
   assignedGuardian: PublicKey,
-): Promise<string> {
+): Promise<{
+  signature: string;
+  walletAccountAddress: PublicKey;
+  walletGuardianAccountAddress: PublicKey;
+}> {
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian);
@@ -169,7 +173,11 @@ export async function addGuardian(
 
   const signature = await buildSignAndSendTransaction(ix, payer, rpc);
 
-  return signature;
+  return {
+    signature,
+    walletAccountAddress: wallet,
+    walletGuardianAccountAddress: walletGuardianAddress,
+  };
 }
 
 export async function checkSplBalance(
