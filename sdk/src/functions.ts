@@ -215,7 +215,7 @@ export async function transferSol(
     lamports: solAmount * LAMPORTS_PER_SOL,
   });
 
-  return await executeTransferInstruction(
+  return await executeInstruction(
     provider,
     rpc,
     payer,
@@ -243,7 +243,7 @@ export async function transferSplToken(
     splAmount,
   );
 
-  return await executeTransferInstruction(
+  return await executeInstruction(
     provider,
     rpc,
     payer,
@@ -253,13 +253,13 @@ export async function transferSplToken(
   );
 }
 
-async function executeTransferInstruction(
+async function executeInstruction(
   provider: Provider,
   rpc: Rpc,
   payer: Keypair,
   seedGuardian: PublicKey,
   guardian: PublicKey,
-  transferInstruction: TransactionInstruction,
+  instruction: TransactionInstruction,
 ): Promise<string> {
   const program = initializeProgram(provider);
 
@@ -291,21 +291,21 @@ async function executeTransferInstruction(
     rootIndex,
   } = packWithInput([walletGuardianAccount], [], [], proof);
 
-  const { writables, signers } = getInstructionAccountMeta(transferInstruction);
+  const { writables, signers } = getInstructionAccountMeta(instruction);
 
   const remainingAccounts = [
     ...formatLightRemainingAccounts(lightRemainingAccounts),
-    ...formatInstructionRemainingAccounts(transferInstruction),
+    ...formatInstructionRemainingAccounts(instruction),
   ];
 
   const programAccountIndex = remainingAccounts.findIndex(
-    x => x.pubkey === transferInstruction.programId,
+    x => x.pubkey === instruction.programId,
   );
 
   const verveInstruction: VerveInstruction = {
-    data: transferInstruction.data,
+    data: instruction.data,
     accountIndices: Buffer.from(
-      transferInstruction.keys.map(key =>
+      instruction.keys.map(key =>
         remainingAccounts.findIndex(
           remainingAccount => remainingAccount.pubkey === key.pubkey,
         ),
