@@ -44,6 +44,12 @@ async function handleToolCalls(
 }
 
 async function main() {
+  console.log(
+    colors.bold.white(`Welcome to the Verve Agentic Wallet example Agent!`),
+  );
+
+  console.log(colors.bold.white(`Setting up Agent, please wait...`));
+
   const {
     provider,
     rpc,
@@ -55,24 +61,21 @@ async function main() {
   } = await setup();
 
   console.log(
-    colors.bold.green(`Welcome to the Verve Agentic Wallet example Agent!`),
-  );
-  console.log(
-    colors.bold.green(
+    colors.bold.white(
       `The Agent's smart wallet address is ${smartWalletAddress.toBase58()}. You can ask the agent to share custody over this wallet with you.`,
     ),
   );
   console.log(
-    colors.bold.green(
+    colors.bold.white(
       `An example SPL token mint has been set up: ${tokenMint.toBase58()}`,
     ),
   );
   console.log(
-    colors.bold.green(
+    colors.bold.white(
       `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()}.`,
     ),
   );
-  console.log(colors.bold.green(`You can start chatting with the Agent:`));
+  console.log(colors.bold.white(`You can start chatting with the Agent:`));
 
   const chatHistory = []; // Store conversation history
 

@@ -24,10 +24,9 @@ export const setup = async () => {
   // Set this as the default provider
   setProvider(provider);
 
-  // Log the public key of your randomly generated keypair
   console.log(
-    colors.bold.blue(
-      `Wallet public key: ${providerWalletKeypair.publicKey.toString()}`,
+    colors.bold.white(
+      `Transaction sponsor public key: ${providerWalletKeypair.publicKey.toString()}`,
     ),
   );
 
@@ -45,8 +44,6 @@ export const setup = async () => {
     blockhash,
     lastValidBlockHeight,
   });
-
-  console.log(colors.bold.blue("Airdropped 5 SOL to wallet"));
 
   const rpc = createRpc(undefined, undefined, undefined, {
     commitment: "confirmed",
