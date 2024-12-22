@@ -1,6 +1,6 @@
 import { AnchorProvider, setProvider, Wallet } from "@coral-xyz/anchor";
 import { createRpc } from "@lightprotocol/stateless.js";
-import { Connection, Keypair } from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import colors from "colors";
 import dotenv from "dotenv";
 
@@ -31,7 +31,7 @@ export const setup = async () => {
 
   const airdropSignature = await connection.requestAirdrop(
     walletKeypair.publicKey,
-    5_000_000_000, // 5 SOL in lamports
+    5 * LAMPORTS_PER_SOL,
   );
 
   const { blockhash, lastValidBlockHeight } =
@@ -44,7 +44,7 @@ export const setup = async () => {
     lastValidBlockHeight,
   });
 
-  console.log(colors.bold.blue("Airdropped5 SOL to wallet"));
+  console.log(colors.bold.blue("Airdropped 5 SOL to wallet"));
 
   const rpc = createRpc(undefined, undefined, undefined, {
     commitment: "confirmed",
