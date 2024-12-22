@@ -260,7 +260,7 @@ export const functions: VerveTool[] = [
         guardian,
         fromAta.address,
         toAta.address,
-        wallet.payer.publicKey,
+        walletAddress,
         parsedParams.amount,
       );
 
