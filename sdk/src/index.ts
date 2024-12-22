@@ -1,4 +1,4 @@
-import { functions } from "./chat";
+import { verveTools } from "./chat";
 import {
   checkSolBalance,
   checkSplBalance,
@@ -6,7 +6,7 @@ import {
   createWallet,
 } from "./functions";
 
-export const tools = functions;
+export const tools = verveTools;
 
 export const utils = {
   checkSolBalance,

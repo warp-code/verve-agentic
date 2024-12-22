@@ -12,7 +12,7 @@ import { deriveWalletAddress } from "./utils/functions";
 import type { VerveTool } from "./utils/types";
 import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 
-export const functions: VerveTool[] = [
+export const verveTools: VerveTool[] = [
   {
     type: "function",
     function: {
