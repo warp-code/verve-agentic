@@ -69,7 +69,7 @@ async function main() {
   );
   console.log(
     colors.bold.green(
-      `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()} and it holds 1000000000 tokens.`,
+      `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()}.`,
     ),
   );
   console.log(colors.bold.green(`You can start chatting with the Agent:`));
