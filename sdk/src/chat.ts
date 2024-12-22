@@ -75,7 +75,7 @@ export const functions: VerveTool[] = [
         provider.connection,
         wallet.payer,
         mint,
-        wallet.publicKey,
+        walletAddress,
         true,
         "confirmed",
       );
