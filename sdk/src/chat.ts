@@ -2,16 +2,15 @@ import { PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 import {
   addGuardian,
+  checkSolBalance,
+  checkSplBalance,
   createWallet,
   transferSol,
   transferSplToken,
 } from "./functions";
 import { deriveWalletAddress } from "./utils/functions";
 import type { VerveTool } from "./utils/types";
-import {
-  getAccount,
-  getOrCreateAssociatedTokenAccount,
-} from "@solana/spl-token";
+import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 
 export const functions: VerveTool[] = [
   {
@@ -27,6 +26,63 @@ export const functions: VerveTool[] = [
         await createWallet(provider, rpc, wallet.payer, wallet.publicKey);
 
       return { signature, walletAccountAddress, walletGuardianAccountAddress };
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "checkSolBalance",
+      description: "Returns the balance of the Verve smart wallet in SOL",
+      parameters: {},
+    },
+    handler: async (provider, wallet, _rpc, _params) => {
+      const walletAddress = deriveWalletAddress(wallet.publicKey);
+
+      const balance = await checkSolBalance(provider, walletAddress);
+
+      return { balance: `${balance} SOL` };
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "checkSplBalance",
+      description: "Returns the balance of the SPL token for ",
+      parameters: {
+        type: "object",
+        properties: {
+          mint: {
+            type: "string",
+            description: "The public key of the mint",
+          },
+        },
+        required: ["mint"],
+        additionalProperties: false,
+      },
+    },
+    handler: async (provider, wallet, _rpc, params) => {
+      const paramsSchema = z.object({
+        mint: z.string(),
+      });
+
+      const parsedParams = paramsSchema.parse(params);
+
+      const mint = new PublicKey(parsedParams.mint);
+
+      const walletAddress = deriveWalletAddress(wallet.publicKey);
+
+      const ata = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        wallet.payer,
+        mint,
+        wallet.publicKey,
+        true,
+        "confirmed",
+      );
+
+      const balance = await checkSplBalance(provider, ata.address);
+
+      return { balance: balance.toString() };
     },
   },
   {

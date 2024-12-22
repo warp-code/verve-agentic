@@ -67,6 +67,13 @@ export async function setup() {
 
   await confirmTransaction(connection, smartWalletAirdropSignature);
 
+  const solBalance = await utils.checkSolBalance(
+    provider,
+    walletAccountAddress,
+  );
+
+  console.log(colors.bold.blue(`Smart wallet balance: ${solBalance} SOL`));
+
   const walletAccountAta = await utils.createTokenAccount(
     provider,
     providerWallet.payer,
@@ -83,12 +90,12 @@ export async function setup() {
     1_000_000_000,
   );
 
-  const balance = await utils.checkSplBalance(
+  const splBalance = await utils.checkSplBalance(
     provider,
     walletAccountAta.address,
   );
 
-  console.log(colors.bold.blue(`SPL token balance: ${balance}`));
+  console.log(colors.bold.blue(`SPL token balance: ${splBalance}`));
 
   return {
     providerWallet,
