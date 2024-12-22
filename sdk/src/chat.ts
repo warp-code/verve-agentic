@@ -1,17 +1,5 @@
-import OpenAI from "openai";
 import { createWallet } from "./functions";
-import type { Provider } from "@coral-xyz/anchor";
-import { Wallet } from "@coral-xyz/anchor";
-import { Rpc } from "@lightprotocol/stateless.js";
-
-type VerveTool = OpenAI.ChatCompletionTool & {
-  handler: (
-    provider: Provider,
-    wallet: Wallet,
-    rpc: Rpc,
-    params: Record<string, unknown>,
-  ) => Promise<Record<string, unknown>>;
-};
+import type { VerveTool } from "./utils/types";
 
 export const functions: VerveTool[] = [
   {

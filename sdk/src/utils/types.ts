@@ -1,5 +1,7 @@
-import type { PackedMerkleContext } from "@lightprotocol/stateless.js";
+import type { Provider, Wallet } from "@coral-xyz/anchor";
+import type { PackedMerkleContext, Rpc } from "@lightprotocol/stateless.js";
 import type { PublicKey } from "@solana/web3.js";
+import type OpenAI from "openai";
 
 export interface WalletGuardian {
   wallet: PublicKey;
@@ -59,3 +61,12 @@ export interface PackWithInputCompressedAccounts {
   rootIndex: number;
   remainingAccounts: PublicKey[];
 }
+
+export type VerveTool = OpenAI.ChatCompletionTool & {
+  handler: (
+    provider: Provider,
+    wallet: Wallet,
+    rpc: Rpc,
+    params: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>;
+};
