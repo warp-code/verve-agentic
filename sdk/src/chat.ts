@@ -13,14 +13,10 @@ export const functions: VerveTool[] = [
       parameters: {},
     },
     handler: async (provider, wallet, rpc, _params) => {
-      const { signature, walletAccountAddress } = await createWallet(
-        provider,
-        rpc,
-        wallet.payer,
-        wallet.publicKey,
-      );
+      const { signature, walletAccountAddress, walletGuardianAccountAddress } =
+        await createWallet(provider, rpc, wallet.payer, wallet.publicKey);
 
-      return { signature, walletAccountAddress };
+      return { signature, walletAccountAddress, walletGuardianAccountAddress };
     },
   },
   {
