@@ -180,6 +180,17 @@ export async function addGuardian(
   };
 }
 
+export async function checkSolBalance(
+  provider: Provider,
+  walletAddress: PublicKey,
+): Promise<number> {
+  const balance = await provider.connection.getBalance(walletAddress, {
+    commitment: "confirmed",
+  });
+
+  return balance / LAMPORTS_PER_SOL;
+}
+
 export async function checkSplBalance(
   provider: Provider,
   ataAddress: PublicKey,
