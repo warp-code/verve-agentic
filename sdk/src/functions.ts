@@ -33,7 +33,7 @@ import {
   packNew,
   packWithInput,
 } from "./utils/functions";
-import { type VerveInstruction } from "./utils/types";
+import type { CompressedAaPocStruct, VerveInstruction } from "./utils/types";
 
 export async function createWallet(
   provider: Provider,
@@ -74,15 +74,17 @@ export async function createWallet(
     remainingAccounts,
   } = packNew(outputCompressedAccounts, newAddressesParams, proof);
 
+  const args: CompressedAaPocStruct<"initWallet"> = {
+    inputs: [],
+    proof: proof.compressedProof,
+    merkleContext,
+    merkleTreeRootIndex: 0,
+    addressMerkleContext,
+    addressMerkleTreeRootIndex,
+  };
+
   const ix = await program.methods
-    .initWallet(
-      [], // inputs
-      proof.compressedProof, // proof
-      merkleContext, // merkleContext
-      0, // merkleTreeRootIndex
-      addressMerkleContext, // addressMerkleContext
-      addressMerkleTreeRootIndex, // addressMerkleTreeRootIndex
-    )
+    .initWallet(...(Object.values(args) as any))
     .accounts({
       payer: payer.publicKey,
       seedGuardian: seedGuardian,
@@ -102,13 +104,12 @@ export async function createWallet(
 }
 
 export async function addGuardian(
+  provider: Provider,
+  rpc: Rpc,
   payer: Keypair,
   seedGuardian: PublicKey,
   assignedGuardian: PublicKey,
-  provider: Provider,
-  rpcUrl?: string,
 ) {
-  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian);
@@ -139,15 +140,17 @@ export async function addGuardian(
     remainingAccounts,
   } = packNew(outputCompressedAccounts, newAddressesParams, proof);
 
+  const args: CompressedAaPocStruct<"registerKeypair"> = {
+    inputs: [],
+    proof: proof.compressedProof,
+    merkleContext,
+    merkleTreeRootIndex: 0,
+    addressMerkleContext,
+    addressMerkleTreeRootIndex,
+  };
+
   const ix = await program.methods
-    .registerKeypair(
-      [], // inputs
-      proof.compressedProof, // proof
-      merkleContext, // merkleContext
-      0, // merkleTreeRootIndex
-      addressMerkleContext, // addressMerkleContext
-      addressMerkleTreeRootIndex, // addressMerkleTreeRootIndex
-    )
+    .registerKeypair(...(Object.values(args) as any))
     .accounts({
       payer: payer.publicKey,
       seedGuardian: seedGuardian,
@@ -248,16 +251,18 @@ export async function transferSol(
     verveInstruction,
   );
 
+  const args: CompressedAaPocStruct<"execInstruction"> = {
+    inputs: [walletGuardianAccount.data!.data],
+    proof: proof.compressedProof,
+    merkleContext,
+    merkleTreeRootIndex: rootIndex,
+    addressMerkleContext,
+    addressMerkleTreeRootIndex,
+    instructionData: Buffer.from(serializedInstructionData),
+  };
+
   const ix = await program.methods
-    .execInstruction(
-      [walletGuardianAccount.data!.data], // inputs
-      proof.compressedProof, // proof
-      merkleContext, // merkleContext
-      rootIndex, // merkleTreeRootIndex
-      addressMerkleContext, // addressMerkleContext
-      addressMerkleTreeRootIndex, // addressMerkleTreeRootIndex
-      Buffer.from(serializedInstructionData), // instructionData
-    )
+    .execInstruction(...(Object.values(args) as any))
     .accounts({
       payer: payer.publicKey,
       seedGuardian: seedGuardian,
