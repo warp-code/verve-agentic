@@ -1,8 +1,17 @@
 import { PublicKey } from "@solana/web3.js";
 import { z } from "zod";
-import { addGuardian, createWallet, transferSol } from "./functions";
+import {
+  addGuardian,
+  createWallet,
+  transferSol,
+  transferSplToken,
+} from "./functions";
 import { deriveWalletAddress } from "./utils/functions";
 import type { VerveTool } from "./utils/types";
+import {
+  getAccount,
+  getOrCreateAssociatedTokenAccount,
+} from "@solana/spl-token";
 
 export const functions: VerveTool[] = [
   {
@@ -70,9 +79,9 @@ export const functions: VerveTool[] = [
       parameters: {
         type: "object",
         properties: {
-          assignedGuardian: {
+          guardian: {
             type: "string",
-            description: "The public key of a guardian allowed to",
+            description: "The public key of a guardian allowed to transfer SOL",
           },
           to: {
             type: "string",
@@ -84,20 +93,20 @@ export const functions: VerveTool[] = [
             description: "The amount of SOL that will be transfered",
           },
         },
-        required: ["assignedGuardian", "to", "amount"],
+        required: ["guardian", "to", "amount"],
         additionalProperties: false,
       },
     },
     handler: async (provider, wallet, rpc, params) => {
       const paramsSchema = z.object({
-        assignedGuardian: z.string(),
+        guardian: z.string(),
         to: z.string(),
         amount: z.number(),
       });
 
       const parsedParams = paramsSchema.parse(params);
 
-      const assignedGuardian = new PublicKey(parsedParams.assignedGuardian);
+      const guardian = new PublicKey(parsedParams.guardian);
       const toAddress = new PublicKey(parsedParams.to);
 
       const walletAddress = deriveWalletAddress(wallet.publicKey);
@@ -107,9 +116,95 @@ export const functions: VerveTool[] = [
         rpc,
         wallet.payer,
         wallet.publicKey,
-        assignedGuardian,
+        guardian,
         walletAddress,
         toAddress,
+        parsedParams.amount,
+      );
+
+      return { signature };
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "transferSpl",
+      description:
+        "Transfers an amount in SOL from the Verve wallet to a specified address",
+      strict: true,
+      parameters: {
+        type: "object",
+        properties: {
+          guardian: {
+            type: "string",
+            description:
+              "The public key of a guardian allowed to transfer SPL tokens",
+          },
+          mint: {
+            type: "string",
+            description: "The public key of the mint",
+          },
+          to: {
+            type: "string",
+            description:
+              "The public key of the address the SOL will be transfered to",
+          },
+          amount: {
+            type: "number",
+            description: "The amount of SOL that will be transfered",
+          },
+        },
+        required: ["guardian", "mint", "to", "amount"],
+        additionalProperties: false,
+      },
+    },
+    handler: async (provider, wallet, rpc, params) => {
+      const paramsSchema = z.object({
+        guardian: z.string(),
+        mint: z.string(),
+        to: z.string(),
+        amount: z.number(),
+      });
+
+      const parsedParams = paramsSchema.parse(params);
+
+      const guardian = new PublicKey(parsedParams.guardian);
+      const mint = new PublicKey(parsedParams.mint);
+      const toAddress = new PublicKey(parsedParams.to);
+
+      const walletAddress = deriveWalletAddress(wallet.publicKey);
+
+      const fromAta = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        wallet.payer,
+        mint,
+        walletAddress,
+        true,
+        "confirmed",
+      );
+
+      if (fromAta.amount < parsedParams.amount) {
+        return { error: "Insuficient token balance" };
+      }
+
+      const toAta = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        wallet.payer,
+        mint,
+        toAddress,
+        true,
+        "confirmed",
+      );
+
+      const signature = await transferSplToken(
+        provider,
+        rpc,
+        wallet.payer,
+        wallet.publicKey,
+        guardian,
+        fromAta.address,
+        toAta.address,
+        wallet.payer.publicKey,
         parsedParams.amount,
       );
 
