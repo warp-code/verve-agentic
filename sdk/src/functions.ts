@@ -1,17 +1,23 @@
 import { BN, type Provider } from "@coral-xyz/anchor";
 import {
   bn,
-  createRpc,
   deriveAddress,
   Rpc,
   type CompressedAccount,
   type NewAddressParams,
 } from "@lightprotocol/stateless.js";
 import {
+  createTransferInstruction,
+  getAccount,
+  getOrCreateAssociatedTokenAccount,
+  type Account,
+} from "@solana/spl-token";
+import {
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
+  TransactionInstruction,
 } from "@solana/web3.js";
 import { serialize } from "borsh";
 import {
@@ -109,7 +115,7 @@ export async function addGuardian(
   payer: Keypair,
   seedGuardian: PublicKey,
   assignedGuardian: PublicKey,
-) {
+): Promise<string> {
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian);
@@ -166,23 +172,42 @@ export async function addGuardian(
   return signature;
 }
 
-export function checkSplBalance() {
-  return;
+export async function checkSplBalance(
+  provider: Provider,
+  ataAddress: PublicKey,
+): Promise<bigint> {
+  const ata = await getAccount(provider.connection, ataAddress, "confirmed");
+
+  return ata.amount;
 }
 
-export function createTokenAccount() {
-  return;
+export async function createTokenAccount(
+  provider: Provider,
+  payer: Keypair,
+  mint: PublicKey,
+  wallet: PublicKey,
+): Promise<Account> {
+  const ata = await getOrCreateAssociatedTokenAccount(
+    provider.connection,
+    payer,
+    mint,
+    wallet,
+    true,
+    "confirmed",
+  );
+
+  return ata;
 }
 
 export async function transferSol(
-  from: PublicKey,
-  to: PublicKey,
+  provider: Provider,
+  rpc: Rpc,
   payer: Keypair,
   seedGuardian: PublicKey,
   guardian: PublicKey,
+  from: PublicKey,
+  to: PublicKey,
   solAmount: number,
-  provider: Provider,
-  rpcUrl?: string,
 ): Promise<string> {
   const transferInstruction = SystemProgram.transfer({
     fromPubkey: from,
@@ -190,7 +215,52 @@ export async function transferSol(
     lamports: solAmount * LAMPORTS_PER_SOL,
   });
 
-  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, { commitment: "confirmed" });
+  return await executeTransferInstruction(
+    provider,
+    rpc,
+    payer,
+    seedGuardian,
+    guardian,
+    transferInstruction,
+  );
+}
+
+export async function transferSplToken(
+  provider: Provider,
+  rpc: Rpc,
+  payer: Keypair,
+  seedGuardian: PublicKey,
+  guardian: PublicKey,
+  fromAta: PublicKey,
+  toAta: PublicKey,
+  fromAtaOwner: PublicKey,
+  splAmount: number,
+): Promise<string> {
+  const transferInstruction = createTransferInstruction(
+    fromAta,
+    toAta,
+    fromAtaOwner,
+    splAmount,
+  );
+
+  return await executeTransferInstruction(
+    provider,
+    rpc,
+    payer,
+    seedGuardian,
+    guardian,
+    transferInstruction,
+  );
+}
+
+async function executeTransferInstruction(
+  provider: Provider,
+  rpc: Rpc,
+  payer: Keypair,
+  seedGuardian: PublicKey,
+  guardian: PublicKey,
+  transferInstruction: TransactionInstruction,
+): Promise<string> {
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian);
@@ -276,8 +346,4 @@ export async function transferSol(
   const signature = await buildSignAndSendTransaction(ix, payer, rpc);
 
   return signature;
-}
-
-export function transferSplToken() {
-  return;
 }
