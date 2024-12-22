@@ -1,6 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 import { addGuardian, createWallet, transferSol } from "./functions";
+import { deriveWalletAddress } from "./utils/functions";
 import type { VerveTool } from "./utils/types";
 
 export const functions: VerveTool[] = [
@@ -73,11 +74,6 @@ export const functions: VerveTool[] = [
             type: "string",
             description: "The public key of a guardian allowed to",
           },
-          from: {
-            type: "string",
-            description:
-              "The public key of the address the SOL will be transfered to",
-          },
           to: {
             type: "string",
             description:
@@ -88,14 +84,13 @@ export const functions: VerveTool[] = [
             description: "The amount of SOL that will be transfered",
           },
         },
-        required: ["assignedGuardian", "from", "to", "amount"],
+        required: ["assignedGuardian", "to", "amount"],
         additionalProperties: false,
       },
     },
     handler: async (provider, wallet, rpc, params) => {
       const paramsSchema = z.object({
         assignedGuardian: z.string(),
-        from: z.string(),
         to: z.string(),
         amount: z.number(),
       });
@@ -103,8 +98,9 @@ export const functions: VerveTool[] = [
       const parsedParams = paramsSchema.parse(params);
 
       const assignedGuardian = new PublicKey(parsedParams.assignedGuardian);
-      const fromAddress = new PublicKey(parsedParams.from);
       const toAddress = new PublicKey(parsedParams.to);
+
+      const walletAddress = deriveWalletAddress(wallet.publicKey);
 
       const signature = await transferSol(
         provider,
@@ -112,7 +108,7 @@ export const functions: VerveTool[] = [
         wallet.payer,
         wallet.publicKey,
         assignedGuardian,
-        fromAddress,
+        walletAddress,
         toAddress,
         parsedParams.amount,
       );
