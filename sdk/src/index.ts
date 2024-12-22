@@ -1,11 +1,5 @@
 import { functions } from "./chat";
-import {
-  checkSplBalance,
-  createTokenAccount,
-  createWallet,
-  transferSol,
-  transferSplToken,
-} from "./functions";
+import { checkSplBalance, createTokenAccount, createWallet } from "./functions";
 
 export const tools = functions;
-export const utils = { createTokenAccount, createWallet };
+export const utils = { createTokenAccount, createWallet, checkSplBalance };

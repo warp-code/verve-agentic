@@ -83,6 +83,13 @@ export async function setup() {
     1_000_000_000,
   );
 
+  const balance = await utils.checkSplBalance(
+    provider,
+    walletAccountAta.address,
+  );
+
+  console.log(colors.bold.blue(`SPL token balance: ${balance}`));
+
   return {
     providerWallet,
     provider,

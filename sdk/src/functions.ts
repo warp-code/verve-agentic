@@ -349,6 +349,7 @@ async function executeInstruction(
       ...LIGHT_ACCOUNTS,
     })
     .remainingAccounts(remainingAccounts)
+    .signers([payer])
     .instruction();
 
   const signature = await buildSignAndSendTransaction(ix, payer, rpc);
