@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const setup = async () => {
+export async function setup() {
   // Create connection to local cluster
   const connection = new Connection("http://localhost:8899", "confirmed");
 
@@ -25,7 +25,7 @@ export const setup = async () => {
   setProvider(provider);
 
   console.log(
-    colors.bold.white(
+    colors.bold.blue(
       `Transaction sponsor public key: ${providerWalletKeypair.publicKey.toString()}`,
     ),
   );
@@ -35,15 +35,7 @@ export const setup = async () => {
     5 * LAMPORTS_PER_SOL,
   );
 
-  const { blockhash, lastValidBlockHeight } =
-    await connection.getLatestBlockhash();
-
-  // Confirm the airdrop transaction using the newer method
-  await connection.confirmTransaction({
-    signature: airdropSignature,
-    blockhash,
-    lastValidBlockHeight,
-  });
+  await confirmTransaction(connection, airdropSignature);
 
   const rpc = createRpc(undefined, undefined, undefined, {
     commitment: "confirmed",
@@ -67,6 +59,13 @@ export const setup = async () => {
       providerWallet.payer,
       providerWallet.publicKey,
     );
+
+  const smartWalletAirdropSignature = await connection.requestAirdrop(
+    walletAccountAddress,
+    20 * LAMPORTS_PER_SOL,
+  );
+
+  await confirmTransaction(connection, smartWalletAirdropSignature);
 
   const walletAccountAta = await utils.createTokenAccount(
     provider,
@@ -93,4 +92,16 @@ export const setup = async () => {
     smartWalletAtaAddress: walletAccountAta.address,
     smartWalletGuardianAccountAddress: walletGuardianAccountAddress,
   };
-};
+}
+
+async function confirmTransaction(connection: Connection, signature: string) {
+  const { blockhash, lastValidBlockHeight } =
+    await connection.getLatestBlockhash();
+
+  // Confirm the airdrop transaction using the newer method
+  await connection.confirmTransaction({
+    signature,
+    blockhash,
+    lastValidBlockHeight,
+  });
+}

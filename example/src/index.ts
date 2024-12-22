@@ -20,6 +20,9 @@ async function handleToolCalls(
       const functionName = toolCall.function.name;
       const functionArgs = JSON.parse(toolCall.function.arguments);
 
+      console.log("functionName: ", functionName);
+      console.log("functionArgs: ", functionArgs);
+
       const selectedTool = tools.find(x => x.function.name === functionName);
 
       if (selectedTool == null) {
@@ -61,21 +64,26 @@ async function main() {
   } = await setup();
 
   console.log(
-    colors.bold.white(
-      `The Agent's smart wallet address is ${smartWalletAddress.toBase58()}. You can ask the agent to share custody over this wallet with you.`,
+    colors.bold.green(
+      `The Agent's smart wallet address is ${smartWalletAddress.toBase58()}`,
     ),
   );
   console.log(
-    colors.bold.white(
+    colors.bold.green(
+      "You can ask the agent to share custody over this wallet with you.",
+    ),
+  );
+  console.log(
+    colors.bold.green(
       `An example SPL token mint has been set up: ${tokenMint.toBase58()}`,
     ),
   );
   console.log(
-    colors.bold.white(
-      `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()}.`,
+    colors.bold.green(
+      `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()}`,
     ),
   );
-  console.log(colors.bold.white(`You can start chatting with the Agent:`));
+  console.log(colors.bold.green(`You can start chatting with the Agent:`));
 
   const chatHistory = []; // Store conversation history
 
