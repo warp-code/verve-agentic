@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import { z } from "zod";
 import { addGuardian, createWallet } from "./functions";
 import type { VerveTool } from "./utils/types";
 
@@ -42,9 +43,13 @@ export const functions: VerveTool[] = [
       },
     },
     handler: async (provider, wallet, rpc, params) => {
-      const assignedGuardian = new PublicKey(
-        params["assignedGuardian"] as string,
-      );
+      const paramsSchema = z.object({
+        assignedGuardian: z.string(),
+      });
+
+      const parsedParams = paramsSchema.parse(params);
+
+      const assignedGuardian = new PublicKey(parsedParams.assignedGuardian);
 
       const { signature, walletAccountAddress, walletGuardianAccountAddress } =
         await addGuardian(
