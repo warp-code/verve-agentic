@@ -44,10 +44,35 @@ async function handleToolCalls(
 }
 
 async function main() {
-  const { provider, rpc, wallet } = await setup();
+  const {
+    provider,
+    rpc,
+    providerWallet,
+    smartWalletAddress,
+    smartWalletAtaAddress,
+    smartWalletGuardianAccountAddress,
+    tokenMint,
+  } = await setup();
 
-  console.log(colors.bold.green("Welcome to the Chatbot Program!"));
-  console.log(colors.bold.green("You can start chatting with the bot"));
+  console.log(
+    colors.bold.green(`Welcome to the Verve Agentic Wallet example Agent!`),
+  );
+  console.log(
+    colors.bold.green(
+      `The Agent's smart wallet address is ${smartWalletAddress.toBase58()}. You can ask the agent to share custody over this wallet with you.`,
+    ),
+  );
+  console.log(
+    colors.bold.green(
+      `An example SPL token mint has been set up: ${tokenMint.toBase58()}`,
+    ),
+  );
+  console.log(
+    colors.bold.green(
+      `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()} and it holds 1000000000 tokens.`,
+    ),
+  );
+  console.log(colors.bold.green(`You can start chatting with the Agent:`));
 
   const chatHistory = []; // Store conversation history
 
@@ -93,7 +118,7 @@ async function main() {
           responseMessage.tool_calls,
           provider,
           rpc,
-          wallet,
+          providerWallet,
         );
 
         // Add tool calls and results to messages

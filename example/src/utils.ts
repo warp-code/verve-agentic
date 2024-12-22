@@ -1,6 +1,8 @@
 import { AnchorProvider, setProvider, Wallet } from "@coral-xyz/anchor";
 import { createRpc } from "@lightprotocol/stateless.js";
+import { createMint, mintTo } from "@solana/spl-token";
 import { Connection, Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { utils } from "@verve-agentic/sdk";
 import colors from "colors";
 import dotenv from "dotenv";
 
@@ -11,11 +13,11 @@ export const setup = async () => {
   const connection = new Connection("http://localhost:8899", "confirmed");
 
   // Generate a new random keypair
-  const walletKeypair = Keypair.generate();
-  const wallet = new Wallet(walletKeypair);
+  const providerWalletKeypair = Keypair.generate();
+  const providerWallet = new Wallet(providerWalletKeypair);
 
   // Initialize the provider
-  const provider = new AnchorProvider(connection, wallet, {
+  const provider = new AnchorProvider(connection, providerWallet, {
     commitment: "confirmed",
   });
 
@@ -25,12 +27,12 @@ export const setup = async () => {
   // Log the public key of your randomly generated keypair
   console.log(
     colors.bold.blue(
-      `Wallet public key: ${walletKeypair.publicKey.toString()}`,
+      `Wallet public key: ${providerWalletKeypair.publicKey.toString()}`,
     ),
   );
 
   const airdropSignature = await connection.requestAirdrop(
-    walletKeypair.publicKey,
+    providerWalletKeypair.publicKey,
     5 * LAMPORTS_PER_SOL,
   );
 
@@ -50,9 +52,48 @@ export const setup = async () => {
     commitment: "confirmed",
   });
 
+  const mintKeypair = new Keypair();
+
+  const mint = await createMint(
+    provider.connection,
+    providerWalletKeypair,
+    providerWalletKeypair.publicKey,
+    providerWalletKeypair.publicKey,
+    0,
+    mintKeypair,
+  );
+
+  const { walletAccountAddress, walletGuardianAccountAddress } =
+    await utils.createWallet(
+      provider,
+      rpc,
+      providerWallet.payer,
+      providerWallet.publicKey,
+    );
+
+  const walletAccountAta = await utils.createTokenAccount(
+    provider,
+    providerWallet.payer,
+    mint,
+    walletAccountAddress,
+  );
+
+  await mintTo(
+    provider.connection,
+    providerWallet.payer,
+    mint,
+    walletAccountAta.address,
+    providerWallet.payer,
+    1_000_000_000,
+  );
+
   return {
-    wallet,
+    providerWallet,
     provider,
     rpc,
+    tokenMint: mint,
+    smartWalletAddress: walletAccountAddress,
+    smartWalletAtaAddress: walletAccountAta.address,
+    smartWalletGuardianAccountAddress: walletGuardianAccountAddress,
   };
 };
