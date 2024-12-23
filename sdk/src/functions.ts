@@ -18,6 +18,7 @@ import {
   PublicKey,
   SystemProgram,
   TransactionInstruction,
+  type VersionedTransaction,
 } from "@solana/web3.js";
 import { serialize } from "borsh";
 import {
@@ -27,6 +28,7 @@ import {
 } from "./utils/constants";
 import {
   buildSignAndSendTransaction,
+  buildTransaction,
   createNewAddressOutputState,
   deriveWalletAddress,
   deriveWalletGuardianSeed,
@@ -234,14 +236,29 @@ export async function transferSol(
     lamports: solAmount * LAMPORTS_PER_SOL,
   });
 
-  return await executeInstruction(
+  const ix = await buildExecuteInstructionIx(
     provider,
     rpc,
     payer,
     seedGuardian,
-    guardian,
+    guardian.publicKey,
     transferInstruction,
   );
+
+  const additionalSigners: Keypair[] = [];
+
+  if (guardian.publicKey.toString() !== payer.publicKey.toString()) {
+    additionalSigners.push(guardian);
+  }
+
+  const signature = await buildSignAndSendTransaction(
+    rpc,
+    ix,
+    payer,
+    additionalSigners,
+  );
+
+  return signature;
 }
 
 export async function transferSplToken(
@@ -262,7 +279,48 @@ export async function transferSplToken(
     splAmount,
   );
 
-  return await executeInstruction(
+  const ix = await buildExecuteInstructionIx(
+    provider,
+    rpc,
+    payer,
+    seedGuardian,
+    guardian.publicKey,
+    transferInstruction,
+  );
+
+  const additionalSigners: Keypair[] = [];
+
+  if (guardian.publicKey.toString() !== payer.publicKey.toString()) {
+    additionalSigners.push(guardian);
+  }
+
+  const signature = await buildSignAndSendTransaction(
+    rpc,
+    ix,
+    payer,
+    additionalSigners,
+  );
+
+  return signature;
+}
+
+export async function createTransferSolInstruction(
+  provider: Provider,
+  rpc: Rpc,
+  payer: Keypair,
+  seedGuardian: PublicKey,
+  guardian: PublicKey,
+  from: PublicKey,
+  to: PublicKey,
+  solAmount: number,
+): Promise<VersionedTransaction> {
+  const transferInstruction = SystemProgram.transfer({
+    fromPubkey: from,
+    toPubkey: to,
+    lamports: solAmount * LAMPORTS_PER_SOL,
+  });
+
+  const ix = await buildExecuteInstructionIx(
     provider,
     rpc,
     payer,
@@ -270,24 +328,53 @@ export async function transferSplToken(
     guardian,
     transferInstruction,
   );
+
+  return await buildTransaction(rpc, ix, payer);
 }
 
-async function executeInstruction(
+export async function createTransferSplTokenInstruction(
   provider: Provider,
   rpc: Rpc,
   payer: Keypair,
   seedGuardian: PublicKey,
-  guardian: Keypair,
+  guardian: PublicKey,
+  fromAta: PublicKey,
+  toAta: PublicKey,
+  fromAtaOwner: PublicKey,
+  splAmount: number,
+): Promise<VersionedTransaction> {
+  const transferInstruction = createTransferInstruction(
+    fromAta,
+    toAta,
+    fromAtaOwner,
+    splAmount,
+  );
+
+  const ix = await buildExecuteInstructionIx(
+    provider,
+    rpc,
+    payer,
+    seedGuardian,
+    guardian,
+    transferInstruction,
+  );
+
+  return await buildTransaction(rpc, ix, payer);
+}
+
+async function buildExecuteInstructionIx(
+  provider: Provider,
+  rpc: Rpc,
+  payer: Keypair,
+  seedGuardian: PublicKey,
+  guardian: PublicKey,
   instruction: TransactionInstruction,
-): Promise<string> {
+): Promise<TransactionInstruction> {
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian);
 
-  const walletGuardianSeed = deriveWalletGuardianSeed(
-    wallet,
-    guardian.publicKey,
-  );
+  const walletGuardianSeed = deriveWalletGuardianSeed(wallet, guardian);
   const walletGuardianAddress = deriveAddress(
     walletGuardianSeed,
     LIGHT_STATE_TREE_ACCOUNTS.addressTree,
@@ -358,7 +445,7 @@ async function executeInstruction(
     .accounts({
       payer: payer.publicKey,
       seedGuardian: seedGuardian,
-      guardian: guardian.publicKey,
+      guardian: guardian,
       wallet: wallet,
       ...LIGHT_ACCOUNTS,
     })
@@ -366,18 +453,5 @@ async function executeInstruction(
     .signers([payer])
     .instruction();
 
-  const additionalSigners: Keypair[] = [];
-
-  if (guardian.publicKey.toString() !== payer.publicKey.toString()) {
-    additionalSigners.push(guardian);
-  }
-
-  const signature = await buildSignAndSendTransaction(
-    rpc,
-    ix,
-    payer,
-    additionalSigners,
-  );
-
-  return signature;
+  return ix;
 }

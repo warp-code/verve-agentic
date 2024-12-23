@@ -19,6 +19,7 @@ import {
   ComputeBudgetProgram,
   Keypair,
   PublicKey,
+  VersionedTransaction,
   type AccountMeta,
   type TransactionInstruction,
 } from "@solana/web3.js";
@@ -123,6 +124,26 @@ export function getNewAddressParams(
   };
 
   return addressParams;
+}
+
+export async function buildTransaction(
+  rpc: Rpc,
+  instruction: TransactionInstruction,
+  payer: Keypair,
+): Promise<VersionedTransaction> {
+  const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+    units: 1_400_000,
+  });
+
+  const { blockhash } = await rpc.getLatestBlockhash();
+
+  const tx = buildAndSignTx(
+    [modifyComputeUnits, instruction],
+    payer,
+    blockhash,
+  );
+
+  return tx as unknown as VersionedTransaction;
 }
 
 export async function buildSignAndSendTransaction(

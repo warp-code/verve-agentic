@@ -42,9 +42,7 @@ export async function setup() {
 
   await confirmTransaction(connection, airdropSignature);
 
-  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, {
-    commitment: "confirmed",
-  });
+  const rpc = createRpc(rpcUrl, rpcUrl);
 
   const mintKeypair = new Keypair();
 
