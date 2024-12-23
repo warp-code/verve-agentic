@@ -152,7 +152,7 @@ async function main(): Promise<void> {
 
       // Call API with user input and tool definitions
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-mini",
         messages: messages,
         tools: exampleTools,
         tool_choice: "auto",
