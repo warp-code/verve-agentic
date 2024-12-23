@@ -4,5 +4,8 @@
     "example",
     "sdk",
     "web-ui"
-  ]
+  ],
+  "scripts": {
+    "build-sdk": "cd sdk && yarn build"
+  }
 }
