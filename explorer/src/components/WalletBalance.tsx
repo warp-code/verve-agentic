@@ -43,6 +43,64 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
     import.meta.env.VITE_LIGHT_RPC_URL,
   );
 
+  const retrieveSol = async () => {
+    if (
+      !userPublicKey ||
+      !userWallet ||
+      !signTransaction ||
+      !signAllTransactions
+    ) {
+      console.error("No wallet connected!");
+      return;
+    }
+
+    const amount = Number.parseFloat(
+      prompt("Enter an amount to retrieve") ?? "0",
+    );
+
+    if (amount > 0) {
+      const provider = new AnchorProvider(
+        connection,
+        {
+          publicKey: userPublicKey,
+          signAllTransactions,
+          signTransaction,
+        },
+        {
+          commitment: "confirmed",
+        },
+      );
+
+      const tx = await transactions.createTransferSolTransaction(
+        provider,
+        rpc,
+        userPublicKey,
+        new PublicKey(seedGuardian),
+        userPublicKey,
+        new PublicKey(walletAddress),
+        userPublicKey,
+        amount,
+      );
+
+      const signature = await userWallet.adapter.sendTransaction(
+        tx,
+        connection,
+      );
+
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+
+      // Wait for confirmation
+      await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight,
+      });
+
+      await fetchBalances();
+    }
+  };
+
   const retrieveToken = async (mint: string) => {
     if (
       !userPublicKey ||
@@ -214,9 +272,22 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
             perform actions.
           </div>
         )}
-        <div className="border-b pb-4">
-          <div className="font-medium text-gray-600">SOL Balance</div>
-          <div className="text-2xl font-bold">{solBalance?.toFixed(4)} SOL</div>
+        <div className="flex justify-between border-b pb-4">
+          <div>
+            <div className="font-medium text-gray-600">SOL Balance</div>
+            <div className="text-2xl font-bold">
+              {solBalance?.toFixed(4)} SOL
+            </div>
+          </div>
+          <div className="flex">
+            <Button
+              className="mt-auto"
+              disabled={!canAccess}
+              onClick={() => retrieveSol()}
+            >
+              Retrieve
+            </Button>
+          </div>
         </div>
 
         {tokenBalances.length > 0 ? (
