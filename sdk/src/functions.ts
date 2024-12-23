@@ -304,7 +304,7 @@ export async function transferSplToken(
   return signature;
 }
 
-export async function createTransferSolInstruction(
+export async function createTransferSolTransaction(
   provider: Provider,
   rpc: Rpc,
   payer: PublicKey,
@@ -332,7 +332,7 @@ export async function createTransferSolInstruction(
   return await buildTransaction(rpc, ix, payer);
 }
 
-export async function createTransferSplTokenInstruction(
+export async function createTransferSplTokenTransaction(
   provider: Provider,
   rpc: Rpc,
   payer: PublicKey,
