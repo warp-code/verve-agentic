@@ -393,8 +393,6 @@ export async function executeInstruction(
   guardian: Keypair,
   instruction: TransactionInstruction,
 ): Promise<string> {
-  const additionalSigners: Keypair[] = [];
-
   const ix = await buildExecuteInstructionIx(
     provider,
     rpc,
@@ -403,6 +401,8 @@ export async function executeInstruction(
     guardian.publicKey,
     instruction,
   );
+
+  const additionalSigners: Keypair[] = [];
 
   if (guardian.publicKey.toString() !== payer.publicKey.toString()) {
     additionalSigners.push(guardian);
