@@ -385,6 +385,39 @@ export async function isGuardian(
   return false;
 }
 
+export async function executeInstruction(
+  provider: Provider,
+  rpc: Rpc,
+  payer: Keypair,
+  seedGuardian: PublicKey,
+  guardian: Keypair,
+  instruction: TransactionInstruction,
+): Promise<string> {
+  const additionalSigners: Keypair[] = [];
+
+  const ix = await buildExecuteInstructionIx(
+    provider,
+    rpc,
+    payer.publicKey,
+    seedGuardian,
+    guardian.publicKey,
+    instruction,
+  );
+
+  if (guardian.publicKey.toString() !== payer.publicKey.toString()) {
+    additionalSigners.push(guardian);
+  }
+
+  const signature = await buildSignAndSendTransaction(
+    rpc,
+    ix,
+    payer,
+    additionalSigners,
+  );
+
+  return signature;
+}
+
 async function buildExecuteInstructionIx(
   provider: Provider,
   rpc: Rpc,
