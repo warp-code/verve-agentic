@@ -184,7 +184,7 @@ async function main() {
         // Add tool calls and results to messages
         messages.push(responseMessage);
 
-        for (let tcr of toolResults) {
+        for (const tcr of toolResults) {
           messages.push({
             role: "tool",
             content: tcr.output,

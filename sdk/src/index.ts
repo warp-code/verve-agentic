@@ -22,10 +22,10 @@ export const utils = {
   transferSol,
   transferSplToken,
   addGuardian,
+  isGuardian,
 };
 
-export const instructions = {
+export const transactions = {
   createTransferSolTransaction,
   createTransferSplTokenTransaction,
-  isGuardian,
 };
