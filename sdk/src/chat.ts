@@ -1,3 +1,4 @@
+import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 import {
@@ -10,7 +11,6 @@ import {
 } from "./functions";
 import { deriveWalletAddress } from "./utils/functions";
 import type { VerveTool } from "./utils/types";
-import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 
 export const verveTools: VerveTool[] = [
   {
@@ -265,6 +265,18 @@ export const verveTools: VerveTool[] = [
       );
 
       return { signature };
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "getManagementUrl",
+      description:
+        "Returns an URL to the web ui which the user can use to manage their Verve wallet",
+      parameters: {},
+    },
+    handler: async (_provider, _wallet, _rpc, _params) => {
+      return { url: "https://www.google.com" };
     },
   },
 ];
