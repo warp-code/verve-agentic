@@ -5,7 +5,6 @@ import {
   addGuardian,
   checkSolBalance,
   checkSplBalance,
-  createWallet,
   transferSol,
   transferSplToken,
 } from "./functions";
@@ -13,21 +12,6 @@ import { deriveWalletAddress } from "./utils/functions";
 import type { VerveTool } from "./utils/types";
 
 export const verveTools: VerveTool[] = [
-  {
-    type: "function",
-    function: {
-      name: "createWallet",
-      description:
-        "Creates a new Verve wallet with the agent's wallet as the initial guardian",
-      parameters: {},
-    },
-    handler: async (provider, wallet, rpc, _params) => {
-      const { signature, walletAccountAddress, walletGuardianAccountAddress } =
-        await createWallet(provider, rpc, wallet.payer, wallet.publicKey);
-
-      return { signature, walletAccountAddress, walletGuardianAccountAddress };
-    },
-  },
   {
     type: "function",
     function: {
@@ -251,18 +235,6 @@ export const verveTools: VerveTool[] = [
       );
 
       return { signature };
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "getManagementUrl",
-      description:
-        "Returns an URL to the web ui which the user can use to manage their Verve wallet",
-      parameters: {},
-    },
-    handler: async (_provider, _wallet, _rpc, _params) => {
-      return { url: "https://www.google.com" };
     },
   },
 ];

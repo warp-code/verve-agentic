@@ -5,6 +5,42 @@ import { setup } from "./utils";
 import { tools } from "@verve-agentic/sdk";
 import type { Provider, Wallet } from "@coral-xyz/anchor";
 import type { Rpc } from "@lightprotocol/stateless.js";
+import type { VerveTool } from "@verve-agentic/sdk/lib/types/utils/types";
+import { z } from "zod";
+
+const exampleTools: VerveTool[] = [
+  ...tools,
+  <VerveTool>{
+    type: "function",
+    function: {
+      name: "getManagementUrl",
+      description:
+        "Returns an URL to the web ui which the user can use to manage their Verve wallet",
+      parameters: {
+        type: "object",
+        properties: {
+          walletAddress: {
+            type: "string",
+            description: "The public key of the Verve smart wallet",
+          },
+        },
+        required: ["walletAddress"],
+        additionalProperties: false,
+      },
+    },
+    handler: async (_provider, _wallet, _rpc, params) => {
+      const paramsSchema = z.object({
+        walletAddress: z.string(),
+      });
+
+      const parsedParams = paramsSchema.parse(params);
+
+      const managementUrl = process.env.MANAGEMENT_URL;
+
+      return { url: `${managementUrl}?wallet=${parsedParams.walletAddress}` };
+    },
+  },
+];
 
 // Function to handle tool calls
 async function handleToolCalls(
@@ -23,7 +59,9 @@ async function handleToolCalls(
       console.log("functionName: ", functionName);
       console.log("functionArgs: ", functionArgs);
 
-      const selectedTool = tools.find(x => x.function.name === functionName);
+      const selectedTool = exampleTools.find(
+        x => x.function.name === functionName,
+      );
 
       if (selectedTool == null) {
         throw new Error(`Unknown function: ${functionName}`);
@@ -63,6 +101,15 @@ async function main() {
     tokenMint,
   } = await setup();
 
+  const chatHistory: any[][] = [
+    ["user", `The smart wallet address is ${smartWalletAddress.toBase58()}`],
+    ["user", `The mint address is ${tokenMint.toBase58()}`],
+    [
+      "user",
+      `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()}`,
+    ],
+  ]; // Store conversation history
+
   console.log(
     colors.bold.green(
       `The Agent's smart wallet address is ${smartWalletAddress.toBase58()}`,
@@ -85,8 +132,6 @@ async function main() {
   );
   console.log(colors.bold.green(`You can start chatting with the Agent:`));
 
-  const chatHistory = []; // Store conversation history
-
   while (true) {
     const userInput = readlineSync.question(colors.yellow("You: "));
 
@@ -108,7 +153,7 @@ async function main() {
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: messages,
-        tools: tools,
+        tools: exampleTools,
         tool_choice: "auto",
       });
 
