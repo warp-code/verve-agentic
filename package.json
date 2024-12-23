@@ -1,9 +1,9 @@
 {
   "private": true,
   "workspaces": [
-    "example",
+    "agent",
     "sdk",
-    "web-ui"
+    "explorer"
   ],
   "scripts": {
     "build-sdk": "cd sdk && yarn build"
