@@ -48,3 +48,9 @@ input[type="number"] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
+@layer base {
+  :root {
+
+    --radius: 0.5rem;
+  }
+}
