@@ -56,8 +56,10 @@ async function handleToolCalls(
       const functionName = toolCall.function.name;
       const functionArgs = JSON.parse(toolCall.function.arguments);
 
-      console.log("functionName: ", functionName);
-      console.log("functionArgs: ", functionArgs);
+      console.log(colors.gray(`functionName: ${functionName}`));
+      console.log(
+        colors.gray(`functionArgs: ${JSON.stringify(functionArgs, null, 2)}`),
+      );
 
       const selectedTool = exampleTools.find(
         x => x.function.name === functionName,

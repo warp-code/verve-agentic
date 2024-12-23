@@ -9,8 +9,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export async function setup() {
+  const rpcUrl = process.env.RPC_URL;
+
   // Create connection to local cluster
-  const connection = new Connection("http://localhost:8899", "confirmed");
+  const connection = new Connection(
+    process.env.RPC_URL ?? "http://localhost:8899",
+    "confirmed",
+  );
 
   // Generate a new random keypair
   const providerWalletKeypair = Keypair.generate();
@@ -37,7 +42,7 @@ export async function setup() {
 
   await confirmTransaction(connection, airdropSignature);
 
-  const rpc = createRpc(undefined, undefined, undefined, {
+  const rpc = createRpc(rpcUrl, rpcUrl, rpcUrl, {
     commitment: "confirmed",
   });
 
