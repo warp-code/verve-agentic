@@ -16,7 +16,7 @@
     "@lightprotocol/stateless.js": "^0.17.1",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.95.3",
-    "@verve-agentic/sdk": "^1.0.0",
+    "@verve-agentic/sdk": "0.0.1",
     "colors": "^1.4.0",
     "dotenv": "^16.4.7",
     "openai": "^4.77.0",
