@@ -6,7 +6,9 @@ import {
   // getAccount,
   TokenAccountNotFoundError,
 } from "@solana/spl-token";
-import { useConnection } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { getOrCreateAta } from "@/utils/ata";
+import { Button } from "./ui/button";
 
 interface TokenBalance {
   mint: string;
@@ -21,10 +23,36 @@ interface WalletBalanceProps {
 
 const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
   const { connection } = useConnection();
+  const { wallet: userWallet, publicKey: userPublicKey } = useWallet();
   const [solBalance, setSolBalance] = useState<number | null>(null);
   const [tokenBalances, setTokenBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const retrieveToken = async (mint: string) => {
+    if (!userPublicKey) {
+      console.error("No user public key found!");
+      return;
+    }
+
+    const mintPubkey = new PublicKey(mint);
+
+    const userTokenAccount = await getOrCreateAta(
+      mintPubkey,
+      userPublicKey,
+      connection,
+      userWallet,
+    );
+
+    console.log(userTokenAccount?.address.toBase58());
+
+    const amount = Number.parseInt(
+      prompt("Enter an amount to retrieve") ?? "0",
+    );
+
+    if (amount > 0) {
+    }
+  };
 
   const fetchBalances = async () => {
     if (!walletAddress) {
@@ -122,6 +150,11 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
                 >
                   <span className="font-medium">{token.symbol}</span>
                   <span>{token.amount.toFixed(token.decimals)}</span>
+                  <span>
+                    <Button onClick={() => retrieveToken(token.mint)}>
+                      Retrieve
+                    </Button>
+                  </span>
                 </div>
               ))}
             </div>

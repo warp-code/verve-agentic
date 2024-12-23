@@ -28,7 +28,8 @@
     "react-router-dom": "^7.0.2",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "vite-plugin-node-polyfills": "^0.22.0"
+    "vite-plugin-node-polyfills": "^0.22.0",
+    "@verve-agentic/sdk": "1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
