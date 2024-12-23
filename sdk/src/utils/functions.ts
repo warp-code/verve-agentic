@@ -2,6 +2,7 @@ import { BN, Program, type Provider } from "@coral-xyz/anchor";
 import {
   bn,
   buildAndSignTx,
+  buildTx,
   getIndexOrAdd,
   LightSystemProgram,
   packCompressedAccounts,
@@ -129,7 +130,7 @@ export function getNewAddressParams(
 export async function buildTransaction(
   rpc: Rpc,
   instruction: TransactionInstruction,
-  payer: Keypair,
+  payer: PublicKey,
 ): Promise<VersionedTransaction> {
   const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
     units: 1_400_000,
@@ -137,11 +138,7 @@ export async function buildTransaction(
 
   const { blockhash } = await rpc.getLatestBlockhash();
 
-  const tx = buildAndSignTx(
-    [modifyComputeUnits, instruction],
-    payer,
-    blockhash,
-  );
+  const tx = buildTx([modifyComputeUnits, instruction], payer, blockhash);
 
   return tx as unknown as VersionedTransaction;
 }

@@ -239,7 +239,7 @@ export async function transferSol(
   const ix = await buildExecuteInstructionIx(
     provider,
     rpc,
-    payer,
+    payer.publicKey,
     seedGuardian,
     guardian.publicKey,
     transferInstruction,
@@ -282,7 +282,7 @@ export async function transferSplToken(
   const ix = await buildExecuteInstructionIx(
     provider,
     rpc,
-    payer,
+    payer.publicKey,
     seedGuardian,
     guardian.publicKey,
     transferInstruction,
@@ -307,7 +307,7 @@ export async function transferSplToken(
 export async function createTransferSolInstruction(
   provider: Provider,
   rpc: Rpc,
-  payer: Keypair,
+  payer: PublicKey,
   seedGuardian: PublicKey,
   guardian: PublicKey,
   from: PublicKey,
@@ -335,7 +335,7 @@ export async function createTransferSolInstruction(
 export async function createTransferSplTokenInstruction(
   provider: Provider,
   rpc: Rpc,
-  payer: Keypair,
+  payer: PublicKey,
   seedGuardian: PublicKey,
   guardian: PublicKey,
   fromAta: PublicKey,
@@ -365,7 +365,7 @@ export async function createTransferSplTokenInstruction(
 async function buildExecuteInstructionIx(
   provider: Provider,
   rpc: Rpc,
-  payer: Keypair,
+  payer: PublicKey,
   seedGuardian: PublicKey,
   guardian: PublicKey,
   instruction: TransactionInstruction,
@@ -443,14 +443,13 @@ async function buildExecuteInstructionIx(
   const ix = await program.methods
     .execInstruction(...(Object.values(args) as any))
     .accounts({
-      payer: payer.publicKey,
+      payer: payer,
       seedGuardian: seedGuardian,
       guardian: guardian,
       wallet: wallet,
       ...LIGHT_ACCOUNTS,
     })
     .remainingAccounts(remainingAccounts)
-    .signers([payer])
     .instruction();
 
   return ix;
