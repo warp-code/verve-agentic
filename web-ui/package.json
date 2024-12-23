@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "format": "prettier --write ./src",
     "clean": "shx rm -rf node_modules",
-    "reset": "yarn clean && yarn"
+    "reset": "yarn clean && yarn",
+    "build-sdk": "cd .. && yarn build-sdk"
   },
   "dependencies": {
     "@coral-xyz/anchor": "0.29.0",
@@ -31,7 +32,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vite-plugin-node-polyfills": "^0.22.0",
-    "@verve-agentic/sdk": "1.0.0"
+    "@verve-agentic/sdk": "0.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
