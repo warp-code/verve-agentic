@@ -135,10 +135,6 @@ export const verveTools: VerveTool[] = [
       parameters: {
         type: "object",
         properties: {
-          guardian: {
-            type: "string",
-            description: "The public key of a guardian allowed to transfer SOL",
-          },
           to: {
             type: "string",
             description:
@@ -149,20 +145,17 @@ export const verveTools: VerveTool[] = [
             description: "The amount of SOL that will be transfered",
           },
         },
-        required: ["guardian", "to", "amount"],
+        required: ["to", "amount"],
         additionalProperties: false,
       },
     },
     handler: async (provider, wallet, rpc, params) => {
       const paramsSchema = z.object({
-        guardian: z.string(),
         to: z.string(),
         amount: z.number(),
       });
 
       const parsedParams = paramsSchema.parse(params);
-
-      const guardian = new PublicKey(parsedParams.guardian);
       const toAddress = new PublicKey(parsedParams.to);
 
       const walletAddress = deriveWalletAddress(wallet.publicKey);
@@ -172,7 +165,7 @@ export const verveTools: VerveTool[] = [
         rpc,
         wallet.payer,
         wallet.publicKey,
-        guardian,
+        wallet.payer,
         walletAddress,
         toAddress,
         parsedParams.amount,
@@ -191,11 +184,6 @@ export const verveTools: VerveTool[] = [
       parameters: {
         type: "object",
         properties: {
-          guardian: {
-            type: "string",
-            description:
-              "The public key of a guardian allowed to transfer SPL tokens",
-          },
           mint: {
             type: "string",
             description: "The public key of the mint",
@@ -210,13 +198,12 @@ export const verveTools: VerveTool[] = [
             description: "The amount of SOL that will be transfered",
           },
         },
-        required: ["guardian", "mint", "to", "amount"],
+        required: ["mint", "to", "amount"],
         additionalProperties: false,
       },
     },
     handler: async (provider, wallet, rpc, params) => {
       const paramsSchema = z.object({
-        guardian: z.string(),
         mint: z.string(),
         to: z.string(),
         amount: z.number(),
@@ -224,7 +211,6 @@ export const verveTools: VerveTool[] = [
 
       const parsedParams = paramsSchema.parse(params);
 
-      const guardian = new PublicKey(parsedParams.guardian);
       const mint = new PublicKey(parsedParams.mint);
       const toAddress = new PublicKey(parsedParams.to);
 
@@ -257,7 +243,7 @@ export const verveTools: VerveTool[] = [
         rpc,
         wallet.payer,
         wallet.publicKey,
-        guardian,
+        wallet.payer,
         fromAta.address,
         toAta.address,
         walletAddress,
