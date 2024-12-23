@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import {
-  TOKEN_PROGRAM_ID,
-  // getAccount,
-  TokenAccountNotFoundError,
-} from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, TokenAccountNotFoundError } from "@solana/spl-token";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { getOrCreateAta } from "@/utils/ata";
 import { Button } from "./ui/button";
-import { instructions } from "@verve-agentic/sdk";
+import { transactions, utils } from "@verve-agentic/sdk";
 import { AnchorProvider } from "@coral-xyz/anchor";
+import { createRpc } from "@lightprotocol/stateless.js";
 
 interface TokenBalance {
   mint: string;
@@ -21,9 +18,13 @@ interface TokenBalance {
 
 interface WalletBalanceProps {
   walletAddress: string;
+  seedGuardian: string;
 }
 
-const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
+const WalletBalance: React.FC<WalletBalanceProps> = ({
+  walletAddress,
+  seedGuardian,
+}) => {
   const { connection } = useConnection();
   const {
     wallet: userWallet,
@@ -35,6 +36,12 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
   const [tokenBalances, setTokenBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [canAccess, setCanAccess] = useState<boolean>(true);
+
+  const rpc = createRpc(
+    import.meta.env.VITE_LIGHT_RPC_URL,
+    import.meta.env.VITE_LIGHT_RPC_URL,
+  );
 
   const retrieveToken = async (mint: string) => {
     if (
@@ -52,6 +59,15 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
     const userTokenAccount = await getOrCreateAta(
       mintPubkey,
       userPublicKey,
+      connection,
+      userWallet,
+    );
+
+    const walletPubkey = new PublicKey(walletAddress);
+
+    const walletTokenAccount = await getOrCreateAta(
+      mintPubkey,
+      walletPubkey,
       connection,
       userWallet,
     );
@@ -74,7 +90,37 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
           commitment: "confirmed",
         },
       );
-      const ix = instructions.createTransferSplTokenInstruction(provider);
+
+      const tx = await transactions.createTransferSplTokenTransaction(
+        provider,
+        rpc,
+        userPublicKey,
+        new PublicKey(seedGuardian),
+        userPublicKey,
+        walletTokenAccount!.address,
+        userTokenAccount!.address,
+        walletPubkey,
+        amount,
+      );
+
+      const signature = await userWallet.adapter.sendTransaction(
+        tx,
+        connection,
+      );
+
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash();
+
+      // Wait for confirmation
+      await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight,
+      });
+
+      console.log("Success!");
+
+      await fetchBalances();
     }
   };
 
@@ -89,16 +135,16 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
       setLoading(true);
       setError(null);
 
-      const pubkey = new PublicKey(walletAddress);
+      const walletPubkey = new PublicKey(walletAddress);
 
       // Fetch SOL balance
-      const balance = await connection.getBalance(pubkey);
+      const balance = await connection.getBalance(walletPubkey);
       console.log(balance);
       setSolBalance(balance / LAMPORTS_PER_SOL);
 
       // Fetch all token accounts
       const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-        pubkey,
+        walletPubkey,
         {
           programId: TOKEN_PROGRAM_ID,
         },
@@ -118,6 +164,12 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
       // Filter out zero balances
       const nonZeroBalances = balances.filter(balance => balance.amount > 0);
       setTokenBalances(nonZeroBalances);
+
+      const isGuardianLoggedIn =
+        !!userPublicKey &&
+        (await utils.isGuardian(rpc, walletPubkey, userPublicKey));
+
+      setCanAccess(isGuardianLoggedIn);
     } catch (err) {
       if (err instanceof TokenAccountNotFoundError) {
         setError("No token accounts found for this wallet");
@@ -154,10 +206,19 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
 
   return (
     <Card className="w-full max-w-lg">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-xl">Wallet Balances</CardTitle>
+        <div>
+          <Button onClick={() => fetchBalances()}>Refresh</Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {!canAccess && (
+          <div className="text-center text-red-500">
+            Your connected wallet is not a guardian for this account. You can't
+            perform actions.
+          </div>
+        )}
         <div className="border-b pb-4">
           <div className="font-medium text-gray-600">SOL Balance</div>
           <div className="text-2xl font-bold">{solBalance?.toFixed(4)} SOL</div>
@@ -175,7 +236,10 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
                   <span className="font-medium">{token.symbol}</span>
                   <span>{token.amount.toFixed(token.decimals)}</span>
                   <span>
-                    <Button onClick={() => retrieveToken(token.mint)}>
+                    <Button
+                      disabled={!canAccess}
+                      onClick={() => retrieveToken(token.mint)}
+                    >
                       Retrieve
                     </Button>
                   </span>
