@@ -15,7 +15,7 @@ async function handleToolCalls(
   rpc: Rpc,
   wallet: Wallet,
   tools: VerveTool[],
-) {
+): Promise<{ tool_call_id: any; output: string }[]> {
   const toolResults = [];
 
   for (const toolCall of toolCalls) {
@@ -51,7 +51,7 @@ async function handleToolCalls(
   return toolResults;
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log(
     colors.bold.white(`Welcome to the Verve Agentic Wallet example Agent!`),
   );
@@ -64,7 +64,6 @@ async function main() {
     providerWallet,
     smartWalletAddress,
     smartWalletAtaAddress,
-    smartWalletGuardianAccountAddress,
     tokenMint,
   } = await setup();
 
@@ -104,6 +103,7 @@ async function main() {
     },
   ];
 
+  // Store conversation history
   const chatHistory: any[][] = [
     ["user", `The smart wallet address is ${smartWalletAddress.toBase58()}`],
     ["user", `The mint address is ${tokenMint.toBase58()}`],
@@ -111,29 +111,27 @@ async function main() {
       "user",
       `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()}`,
     ],
-  ]; // Store conversation history
+  ];
 
   console.log(
     colors.bold.green(
-      `The Agent's smart wallet address is ${smartWalletAddress.toBase58()}`,
+      `The Agent's smart wallet address is ${smartWalletAddress.toBase58()}\r\nYou can ask the agent to share custody over this wallet with you.`,
     ),
   );
-  console.log(
-    colors.bold.green(
-      "You can ask the agent to share custody over this wallet with you.",
-    ),
-  );
+
   console.log(
     colors.bold.green(
       `An example SPL token mint has been set up: ${tokenMint.toBase58()}`,
     ),
   );
+
   console.log(
     colors.bold.green(
       `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()}`,
     ),
   );
-  console.log(colors.bold.green(`You can start chatting with the Agent:`));
+
+  console.log(colors.bold.white(`You can start chatting with the Agent.`));
 
   while (true) {
     const userInput = readlineSync.question(colors.yellow("You: "));
@@ -191,11 +189,6 @@ async function main() {
             tool_call_id: tcr.tool_call_id,
           });
         }
-        // messages.push({
-        //   role: "tool",
-        //   content: JSON.stringify(toolResults),
-        //   tool_call_id: responseMessage.tool_calls[0]!.id,
-        // });
 
         // Get final response after tool use
         const finalCompletion = await openai.chat.completions.create({
