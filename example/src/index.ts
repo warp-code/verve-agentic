@@ -167,7 +167,7 @@ async function main(): Promise<void> {
       // Handle tool calls if present
       if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
         console.log(
-          colors.blue("Bot is using tools to process your request..."),
+          colors.blue("Agent is using tools to process your request..."),
         );
 
         // Execute tool calls
@@ -197,7 +197,7 @@ async function main(): Promise<void> {
         });
 
         const completionText = finalCompletion.choices[0]?.message.content;
-        console.log(colors.green("Bot: ") + completionText);
+        console.log(colors.green("Agent: ") + completionText);
 
         // Update history with user input and final assistant response
         chatHistory.push(["user", userInput]);
@@ -206,7 +206,7 @@ async function main(): Promise<void> {
         // Handle regular response without tool calls
         const completionText = responseMessage.content;
 
-        console.log(colors.green("Bot: ") + completionText);
+        console.log(colors.green("Agent: ") + completionText);
 
         // Update history with user input and assistant response
         chatHistory.push(["user", userInput]);

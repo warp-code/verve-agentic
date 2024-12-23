@@ -76,7 +76,7 @@ export async function setup(): Promise<{
 
   const smartWalletAirdropSignature = await connection.requestAirdrop(
     walletAccountAddress,
-    20 * LAMPORTS_PER_SOL,
+    5 * LAMPORTS_PER_SOL,
   );
 
   await confirmTransaction(connection, smartWalletAirdropSignature);
