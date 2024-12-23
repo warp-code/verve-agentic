@@ -362,6 +362,29 @@ export async function createTransferSplTokenTransaction(
   return await buildTransaction(rpc, ix, payer);
 }
 
+export async function isGuardian(
+  rpc: Rpc,
+  wallet: PublicKey,
+  address: PublicKey,
+): Promise<boolean> {
+  const walletGuardianSeed = deriveWalletGuardianSeed(wallet, address);
+
+  const walletGuardianAddress = deriveAddress(
+    walletGuardianSeed,
+    LIGHT_STATE_TREE_ACCOUNTS.addressTree,
+  );
+
+  const walletGuardianAccount = await rpc.getCompressedAccount(
+    new BN(walletGuardianAddress.toBytes()),
+  );
+
+  if (walletGuardianAccount) {
+    return true;
+  }
+
+  return false;
+}
+
 async function buildExecuteInstructionIx(
   provider: Provider,
   rpc: Rpc,

@@ -9,6 +9,7 @@ import {
   transferSol,
   createTransferSolTransaction,
   createTransferSplTokenTransaction,
+  isGuardian,
 } from "./functions";
 
 export const tools = verveTools;
@@ -26,4 +27,5 @@ export const utils = {
 export const instructions = {
   createTransferSolTransaction,
   createTransferSplTokenTransaction,
+  isGuardian,
 };
