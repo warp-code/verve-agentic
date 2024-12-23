@@ -1,14 +1,26 @@
 import { AnchorProvider, setProvider, Wallet } from "@coral-xyz/anchor";
-import { createRpc } from "@lightprotocol/stateless.js";
+import { createRpc, type Rpc } from "@lightprotocol/stateless.js";
 import { createMint, mintTo } from "@solana/spl-token";
-import { Connection, Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import {
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  type PublicKey,
+} from "@solana/web3.js";
 import { utils } from "@verve-agentic/sdk";
 import colors from "colors";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-export async function setup() {
+export async function setup(): Promise<{
+  providerWallet: Wallet;
+  provider: AnchorProvider;
+  rpc: Rpc;
+  tokenMint: PublicKey;
+  smartWalletAddress: PublicKey;
+  smartWalletAtaAddress: PublicKey;
+}> {
   const rpcUrl = process.env.RPC_URL;
 
   // Create connection to local cluster
@@ -55,13 +67,12 @@ export async function setup() {
     mintKeypair,
   );
 
-  const { walletAccountAddress, walletGuardianAccountAddress } =
-    await utils.createWallet(
-      provider,
-      rpc,
-      providerWallet.payer,
-      providerWallet.publicKey,
-    );
+  const { walletAccountAddress } = await utils.createWallet(
+    provider,
+    rpc,
+    providerWallet.payer,
+    providerWallet.publicKey,
+  );
 
   const smartWalletAirdropSignature = await connection.requestAirdrop(
     walletAccountAddress,
@@ -107,15 +118,16 @@ export async function setup() {
     tokenMint: mint,
     smartWalletAddress: walletAccountAddress,
     smartWalletAtaAddress: walletAccountAta.address,
-    smartWalletGuardianAccountAddress: walletGuardianAccountAddress,
   };
 }
 
-async function confirmTransaction(connection: Connection, signature: string) {
+async function confirmTransaction(
+  connection: Connection,
+  signature: string,
+): Promise<void> {
   const { blockhash, lastValidBlockHeight } =
     await connection.getLatestBlockhash();
 
-  // Confirm the airdrop transaction using the newer method
   await connection.confirmTransaction({
     signature,
     blockhash,
