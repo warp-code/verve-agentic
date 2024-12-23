@@ -19,7 +19,9 @@ const Home = () => {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8">
-      <h1 className="mb-8 text-2xl font-bold">Solana Wallet Explorer</h1>
+      <h1 className="mb-8 text-2xl font-bold">Verve Wallet Explorer</h1>
+      <h2 className="text-md font-semibold">Wallet Address:</h2>
+      <h2 className="text-md mb-8 font-semibold">{walletAddress}</h2>
       <WalletBalance walletAddress={walletAddress} />
     </main>
   );
