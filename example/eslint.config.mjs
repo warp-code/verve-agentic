@@ -23,9 +23,10 @@ export default [
       // enforce linebreak style and fix it automatically with lint:fix
       "linebreak-style": ["error", "unix"],
 
+      "@typescript-eslint/no-explicit-any": "off",
+
       // underscore to ignore unused vars
       "no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
