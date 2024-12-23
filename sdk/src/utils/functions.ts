@@ -126,9 +126,10 @@ export function getNewAddressParams(
 }
 
 export async function buildSignAndSendTransaction(
+  rpc: Rpc,
   instruction: TransactionInstruction,
   payer: Keypair,
-  rpc: Rpc,
+  additionalSigners: Keypair[],
 ): Promise<string> {
   const { blockhash } = await rpc.getLatestBlockhash();
 
@@ -144,6 +145,7 @@ export async function buildSignAndSendTransaction(
     [modifyComputeUnits, instruction],
     payer,
     blockhash,
+    additionalSigners,
   );
 
   const txSignature = await sendAndConfirmTx(rpc, tx, {

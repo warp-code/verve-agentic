@@ -100,7 +100,7 @@ export async function createWallet(
     .remainingAccounts(formatLightRemainingAccounts(remainingAccounts))
     .instruction();
 
-  const signature = await buildSignAndSendTransaction(ix, payer, rpc);
+  const signature = await buildSignAndSendTransaction(rpc, ix, payer, []);
 
   return {
     signature,
@@ -171,7 +171,7 @@ export async function addGuardian(
     .remainingAccounts(formatLightRemainingAccounts(remainingAccounts))
     .instruction();
 
-  const signature = await buildSignAndSendTransaction(ix, payer, rpc);
+  const signature = await buildSignAndSendTransaction(rpc, ix, payer, []);
 
   return {
     signature,
@@ -223,7 +223,7 @@ export async function transferSol(
   rpc: Rpc,
   payer: Keypair,
   seedGuardian: PublicKey,
-  guardian: PublicKey,
+  guardian: Keypair,
   from: PublicKey,
   to: PublicKey,
   solAmount: number,
@@ -249,7 +249,7 @@ export async function transferSplToken(
   rpc: Rpc,
   payer: Keypair,
   seedGuardian: PublicKey,
-  guardian: PublicKey,
+  guardian: Keypair,
   fromAta: PublicKey,
   toAta: PublicKey,
   fromAtaOwner: PublicKey,
@@ -277,14 +277,17 @@ async function executeInstruction(
   rpc: Rpc,
   payer: Keypair,
   seedGuardian: PublicKey,
-  guardian: PublicKey,
+  guardian: Keypair,
   instruction: TransactionInstruction,
 ): Promise<string> {
   const program = initializeProgram(provider);
 
   const wallet = deriveWalletAddress(seedGuardian);
 
-  const walletGuardianSeed = deriveWalletGuardianSeed(wallet, guardian);
+  const walletGuardianSeed = deriveWalletGuardianSeed(
+    wallet,
+    guardian.publicKey,
+  );
   const walletGuardianAddress = deriveAddress(
     walletGuardianSeed,
     LIGHT_STATE_TREE_ACCOUNTS.addressTree,
@@ -355,7 +358,7 @@ async function executeInstruction(
     .accounts({
       payer: payer.publicKey,
       seedGuardian: seedGuardian,
-      guardian: guardian,
+      guardian: guardian.publicKey,
       wallet: wallet,
       ...LIGHT_ACCOUNTS,
     })
@@ -363,7 +366,18 @@ async function executeInstruction(
     .signers([payer])
     .instruction();
 
-  const signature = await buildSignAndSendTransaction(ix, payer, rpc);
+  const additionalSigners: Keypair[] = [];
+
+  if (guardian.publicKey.toString() !== payer.publicKey.toString()) {
+    additionalSigners.push(guardian);
+  }
+
+  const signature = await buildSignAndSendTransaction(
+    rpc,
+    ix,
+    payer,
+    additionalSigners,
+  );
 
   return signature;
 }
