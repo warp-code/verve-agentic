@@ -8,46 +8,13 @@ import type { Rpc } from "@lightprotocol/stateless.js";
 import type { VerveTool } from "@verve-agentic/sdk/lib/types/utils/types";
 import { z } from "zod";
 
-const exampleTools: VerveTool[] = [
-  ...tools,
-  <VerveTool>{
-    type: "function",
-    function: {
-      name: "getManagementUrl",
-      description:
-        "Returns an URL to the web ui which the user can use to manage their Verve wallet",
-      parameters: {
-        type: "object",
-        properties: {
-          walletAddress: {
-            type: "string",
-            description: "The public key of the Verve smart wallet",
-          },
-        },
-        required: ["walletAddress"],
-        additionalProperties: false,
-      },
-    },
-    handler: async (_provider, _wallet, _rpc, params) => {
-      const paramsSchema = z.object({
-        walletAddress: z.string(),
-      });
-
-      const parsedParams = paramsSchema.parse(params);
-
-      const managementUrl = process.env.MANAGEMENT_URL;
-
-      return { url: `${managementUrl}?wallet=${parsedParams.walletAddress}` };
-    },
-  },
-];
-
 // Function to handle tool calls
 async function handleToolCalls(
   toolCalls: any[],
   provider: Provider,
   rpc: Rpc,
   wallet: Wallet,
+  tools: VerveTool[],
 ) {
   const toolResults = [];
 
@@ -61,9 +28,7 @@ async function handleToolCalls(
         colors.gray(`functionArgs: ${JSON.stringify(functionArgs, null, 2)}`),
       );
 
-      const selectedTool = exampleTools.find(
-        x => x.function.name === functionName,
-      );
+      const selectedTool = tools.find(x => x.function.name === functionName);
 
       if (selectedTool == null) {
         throw new Error(`Unknown function: ${functionName}`);
@@ -102,6 +67,42 @@ async function main() {
     smartWalletGuardianAccountAddress,
     tokenMint,
   } = await setup();
+
+  const exampleTools: VerveTool[] = [
+    ...tools,
+    <VerveTool>{
+      type: "function",
+      function: {
+        name: "getManagementUrl",
+        description:
+          "Returns an URL to the web ui which the user can use to manage their Verve wallet",
+        parameters: {
+          type: "object",
+          properties: {
+            walletAddress: {
+              type: "string",
+              description: "The public key of the Verve smart wallet",
+            },
+          },
+          required: ["walletAddress"],
+          additionalProperties: false,
+        },
+      },
+      handler: async (_provider, _wallet, _rpc, params) => {
+        const paramsSchema = z.object({
+          walletAddress: z.string(),
+        });
+
+        const parsedParams = paramsSchema.parse(params);
+
+        const managementUrl = process.env.MANAGEMENT_URL;
+
+        return {
+          url: `${managementUrl}?wallet=${parsedParams.walletAddress}&seedGuardian=${providerWallet.publicKey}`,
+        };
+      },
+    },
+  ];
 
   const chatHistory: any[][] = [
     ["user", `The smart wallet address is ${smartWalletAddress.toBase58()}`],
@@ -177,6 +178,7 @@ async function main() {
           provider,
           rpc,
           providerWallet,
+          exampleTools,
         );
 
         // Add tool calls and results to messages

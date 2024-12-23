@@ -4,6 +4,11 @@ import {
   checkSplBalance,
   createTokenAccount,
   createWallet,
+  transferSplToken,
+  addGuardian,
+  transferSol,
+  createTransferSolInstruction,
+  createTransferSplTokenInstruction,
 } from "./functions";
 
 export const tools = verveTools;
@@ -13,4 +18,12 @@ export const utils = {
   checkSplBalance,
   createTokenAccount,
   createWallet,
+  transferSol,
+  transferSplToken,
+  addGuardian,
+};
+
+export const instructions = {
+  createTransferSolInstruction,
+  createTransferSplTokenInstruction,
 };

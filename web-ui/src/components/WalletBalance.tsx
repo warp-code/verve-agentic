@@ -9,6 +9,8 @@ import {
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { getOrCreateAta } from "@/utils/ata";
 import { Button } from "./ui/button";
+import { instructions } from "@verve-agentic/sdk";
+import { AnchorProvider } from "@coral-xyz/anchor";
 
 interface TokenBalance {
   mint: string;
@@ -23,15 +25,25 @@ interface WalletBalanceProps {
 
 const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
   const { connection } = useConnection();
-  const { wallet: userWallet, publicKey: userPublicKey } = useWallet();
+  const {
+    wallet: userWallet,
+    publicKey: userPublicKey,
+    signTransaction,
+    signAllTransactions,
+  } = useWallet();
   const [solBalance, setSolBalance] = useState<number | null>(null);
   const [tokenBalances, setTokenBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const retrieveToken = async (mint: string) => {
-    if (!userPublicKey) {
-      console.error("No user public key found!");
+    if (
+      !userPublicKey ||
+      !userWallet ||
+      !signTransaction ||
+      !signAllTransactions
+    ) {
+      console.error("No wallet connected!");
       return;
     }
 
@@ -51,6 +63,18 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ walletAddress }) => {
     );
 
     if (amount > 0) {
+      const provider = new AnchorProvider(
+        connection,
+        {
+          publicKey: userPublicKey,
+          signAllTransactions,
+          signTransaction,
+        },
+        {
+          commitment: "confirmed",
+        },
+      );
+      const ix = instructions.createTransferSplTokenInstruction(provider);
     }
   };
 
