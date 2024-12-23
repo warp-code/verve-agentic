@@ -1,12 +1,12 @@
-import openai from "./openai";
-import readlineSync from "readline-sync";
-import colors from "colors";
-import { setup } from "./utils";
-import { tools } from "@verve-agentic/sdk";
 import type { Provider, Wallet } from "@coral-xyz/anchor";
 import type { Rpc } from "@lightprotocol/stateless.js";
+import { tools } from "@verve-agentic/sdk";
 import type { VerveTool } from "@verve-agentic/sdk/lib/types/utils/types";
+import colors from "colors";
+import readlineSync from "readline-sync";
 import { z } from "zod";
+import openai from "./openai";
+import { setup } from "./utils";
 
 // Function to handle tool calls
 async function handleToolCalls(

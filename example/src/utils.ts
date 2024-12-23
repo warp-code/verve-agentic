@@ -1,11 +1,11 @@
 import { AnchorProvider, setProvider, Wallet } from "@coral-xyz/anchor";
-import { createRpc, Rpc } from "@lightprotocol/stateless.js";
+import { createRpc, type Rpc } from "@lightprotocol/stateless.js";
 import { createMint, mintTo } from "@solana/spl-token";
 import {
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
-  PublicKey,
+  type PublicKey,
 } from "@solana/web3.js";
 import { utils } from "@verve-agentic/sdk";
 import colors from "colors";
