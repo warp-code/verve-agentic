@@ -17,11 +17,12 @@
 yarn
 ```
 
-3. To install packages for the `program` directory run the following command
+3. To install packages for the `program` directory and build the program run the following command
 
 ```sh
 cd program
 yarn
+yarn build
 ```
 
 ### Envirnonment variables
@@ -30,22 +31,26 @@ Create `.env` files in `explorer` and `example` directories based on the `.env.t
 
 ### Running the example
 
-#### Program
-
-1. Navigate to the `program` directory
-2. Run `avm use` to use the appropriate anchor version
-3. Run `yarn build` to build the program
-
 #### SDK
 
-1. Navigate to the `sdk` directory
-2. Run `yarn build` to build the sdk
+Navigate to the `sdk` directory and run the following command to build the SDK:
+
+```sh
+yarn build
+```
 
 #### Agent
 
-1. Navigate to the `agent` directory
-2. Run `yarn dev` to start the agent
+Navigate to the `agent` directory and run the following command to start the agent:
+
+```sh
+yarn dev
+```
 
 #### Explorer
 
-1. Run `yarn dev` to start the explorer
+Navigate to the `explorer` directory and run the following command to start the explorer:
+
+```sh
+yarn dev
+```
