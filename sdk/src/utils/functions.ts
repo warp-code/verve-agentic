@@ -2,7 +2,6 @@ import { BN, Program, type Provider } from "@coral-xyz/anchor";
 import {
   bn,
   buildAndSignTx,
-  buildTx,
   getIndexOrAdd,
   LightSystemProgram,
   packCompressedAccounts,
@@ -20,7 +19,6 @@ import {
   ComputeBudgetProgram,
   Keypair,
   PublicKey,
-  VersionedTransaction,
   type AccountMeta,
   type TransactionInstruction,
 } from "@solana/web3.js";
@@ -125,26 +123,6 @@ export function getNewAddressParams(
   };
 
   return addressParams;
-}
-
-export async function buildTxWithComputeBudget(
-  rpc: Rpc,
-  instructions: TransactionInstruction[],
-  payerPubkey: PublicKey,
-): Promise<VersionedTransaction> {
-  const setComputeUnitIx = ComputeBudgetProgram.setComputeUnitLimit({
-    units: 2_000_000,
-  });
-
-  instructions.unshift(setComputeUnitIx);
-
-  const { blockhash } = await rpc.getLatestBlockhash();
-
-  return buildTx(
-    instructions,
-    payerPubkey,
-    blockhash,
-  ) as unknown as VersionedTransaction;
 }
 
 export async function buildSignAndSendTransaction(
