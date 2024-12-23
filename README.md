@@ -54,3 +54,28 @@ Navigate to the `explorer` directory and run the following command to start the 
 ```sh
 yarn dev
 ```
+
+## How to use
+
+Start the `agent` and `explorer`.
+
+The agent will set up a Verve smart wallet and print an explorer link which you can use to manage the verve smart wallet.
+
+The agent has the following tools at its disposal provided by the SDK:
+
+- addGuardian
+- checkSolBalance
+- checkSplBalance
+- transferSol
+- transferSpl
+
+You can ask the agent to print you all the tools it has at its disposal:
+
+```txt
+List all the tools you have access to and their parameters.
+
+```
+
+Connect a wallet to the the explorer and tell the agent to add the wallet as a guardian for Verve's smart wallet
+
+Your wallet should now be able to transfer SOL and SPL tokens from your Verve smart wallet to your connected wallet using the explorer.
