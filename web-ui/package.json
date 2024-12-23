@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "format": "prettier --write ./src",
     "clean": "shx rm -rf node_modules",
-    "reset": "yarn clean && yarn"
+    "reset": "yarn clean && yarn",
+    "build-sdk": "cd .. && yarn build-sdk"
   },
   "dependencies": {
     "@coral-xyz/anchor": "0.29.0",
