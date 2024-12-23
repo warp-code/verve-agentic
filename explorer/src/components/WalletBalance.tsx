@@ -72,8 +72,6 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
       userWallet,
     );
 
-    console.log(userTokenAccount?.address.toBase58());
-
     const amount = Number.parseInt(
       prompt("Enter an amount to retrieve") ?? "0",
     );
@@ -118,8 +116,6 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         lastValidBlockHeight,
       });
 
-      console.log("Success!");
-
       await fetchBalances();
     }
   };
@@ -139,7 +135,6 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
 
       // Fetch SOL balance
       const balance = await connection.getBalance(walletPubkey);
-      console.log(balance);
       setSolBalance(balance / LAMPORTS_PER_SOL);
 
       // Fetch all token accounts
