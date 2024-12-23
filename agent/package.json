@@ -1,7 +1,7 @@
 {
-  "name": "@verve-agentic/example",
+  "name": "@verve-agentic/agent",
   "version": "1.0.0",
-  "description": "Example console chat interface which can utilize the Verve agentic SDK",
+  "description": "Example console agent which can utilize the Verve agentic SDK",
   "files": [
     "src/"
   ],

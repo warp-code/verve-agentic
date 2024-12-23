@@ -26,16 +26,16 @@
       "path": "."
     },
     {
-      "path": "./example",
+      "path": "./agent",
+    },
+    {
+      "path": "./explorer",
     },
     {
       "path": "./program"
     },
     {
       "path": "./sdk",
-    },
-    {
-      "path": "./web-ui",
     },
   ]
 }
