@@ -67,6 +67,8 @@ async function main(): Promise<void> {
     tokenMint,
   } = await setup();
 
+  const managementUrl = process.env.MANAGEMENT_URL;
+
   const exampleTools: VerveTool[] = [
     ...tools,
     <VerveTool>{
@@ -93,8 +95,6 @@ async function main(): Promise<void> {
         });
 
         const parsedParams = paramsSchema.parse(params);
-
-        const managementUrl = process.env.MANAGEMENT_URL;
 
         return {
           url: `${managementUrl}?wallet=${parsedParams.walletAddress}&seedGuardian=${providerWallet.publicKey}`,
@@ -128,6 +128,12 @@ async function main(): Promise<void> {
   console.log(
     colors.bold.green(
       `The smart wallet's ATA address is ${smartWalletAtaAddress.toBase58()}`,
+    ),
+  );
+
+  console.log(
+    colors.bold.green(
+      `Management url: ${managementUrl}?wallet=${smartWalletAddress.toBase58()}&seedGuardian=${providerWallet.publicKey}`,
     ),
   );
 
