@@ -2,10 +2,14 @@
 
 ## Setup instructions
 
+### Prerequisites
+
+Running the examples requires the [Light Protocol ZK Compression CLI](https://github.com/Lightprotocol/light-protocol/tree/main/cli). Follow the instructions in its readme to install it.
+
 ### Installation
 
-1. Yarn workspaces must be enabled
-   Run the following command to enable yarn workspaces:
+1. Yarn workspaces must be enabled.
+   Run the following command to enable yarn workspaces (V1):
 
 ```sh
    yarn config set workspaces-experimental true
@@ -59,7 +63,7 @@ yarn dev
 
 Start the `agent` and `explorer`.
 
-The agent will set up a Verve smart wallet and print an explorer link which you can use to manage the verve smart wallet.
+The agent will set up a Verve smart wallet and print an explorer link which you can use to manage the verve smart wallet. By default, only the agent can control the wallet. You will have to explicitly ask it to give you access to the wallet.
 
 The agent has the following tools at its disposal provided by the SDK:
 
@@ -73,9 +77,8 @@ You can ask the agent to print you all the tools it has at its disposal:
 
 ```txt
 List all the tools you have access to and their parameters.
-
 ```
 
-Connect a wallet to the the explorer and tell the agent to add the wallet as a guardian for Verve's smart wallet
+Connect a wallet to the the explorer and tell the agent to give it access as a guardian for Verve's smart wallet.
 
 Your wallet should now be able to transfer SOL and SPL tokens from your Verve smart wallet to your connected wallet using the explorer.
